@@ -3,6 +3,10 @@ import pytest
 
 from app.database.session import SessionLocal
 from app.services.auth_service import AuthService
+from app.core.exceptions import (
+    EmailAlreadyRegisteredError,
+    InvalidCredentialsError,
+)
 
 
 def test_register_user():
@@ -60,7 +64,10 @@ def test_register_user_rejects_duplicate_email():
             password="testpassword",
         )
 
-        with pytest.raises(ValueError, match="Email already registered"):
+        with pytest.raises(
+            EmailAlreadyRegisteredError,
+            match="Email already registered",
+        ):
             service.register_user(
                 full_name="Second User",
                 email="DUPLICATE@example.com",
@@ -107,7 +114,7 @@ def test_login_user_rejects_wrong_password():
             password="testpassword",
         )
 
-        with pytest.raises(ValueError, match="Invalid credentials"):
+        with pytest.raises(InvalidCredentialsError, match="Invalid credentials"):
             service.login_user(
                 email="wrong-password@example.com",
                 password="wrongpassword",
@@ -124,7 +131,7 @@ def test_login_user_rejects_unknown_email():
     try:
         service = AuthService(db)
 
-        with pytest.raises(ValueError, match="Invalid credentials"):
+        with pytest.raises(InvalidCredentialsError, match="Invalid credentials"):
             service.login_user(
                 email="does-not-exist@example.com",
                 password="testpassword",

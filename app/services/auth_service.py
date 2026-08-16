@@ -3,6 +3,10 @@ from sqlalchemy.orm import Session
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
+from app.core.exceptions import (
+    EmailAlreadyRegisteredError,
+    InvalidCredentialsError,
+)
 
 
 class AuthService:
@@ -26,7 +30,7 @@ class AuthService:
         existing_user = self.user_repository.find_by_email(email)
 
         if existing_user:
-            raise ValueError("Email already registered.")
+            raise EmailAlreadyRegisteredError("Email already registered.")
 
         password_hash = hash_password(password)
 
@@ -36,7 +40,14 @@ class AuthService:
             password_hash=password_hash,
         )
 
-        return self.user_repository.create(user)
+        try:
+            user = self.user_repository.create(user)
+            self.db.commit()
+            return user
+
+        except Exception:
+            self.db.rollback()
+            raise
 
     def login_user(
         self,
@@ -48,12 +59,12 @@ class AuthService:
         user = self.user_repository.find_by_email(email)
 
         if not user:
-            raise ValueError("Invalid credentials.")
+            raise InvalidCredentialsError("Invalid credentials.")
 
         if not verify_password(password, user.password_hash):
-            raise ValueError("Invalid credentials.")
+            raise InvalidCredentialsError("Invalid credentials.")
 
         if not user.is_active:
-            raise ValueError("Invalid credentials.")
+            raise InvalidCredentialsError("Invalid credentials.")
 
         return create_access_token(user.id)

@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 
+from app.api.routes.tasks import router as tasks_router
+
 from app.api.exception_handlers import (
     email_already_registered_handler,
     invalid_credentials_handler,
@@ -34,5 +36,10 @@ app.add_exception_handler(
 
 app.include_router(
     auth_router,
+    prefix="/api",
+)
+
+app.include_router(
+    tasks_router,
     prefix="/api",
 )

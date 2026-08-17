@@ -38,3 +38,24 @@ class MonitoringTaskRepository:
         )
 
         return list(self.db.scalars(statement).all())
+
+    def update(self, task: MonitoringTask) -> MonitoringTask:
+        self.db.flush()
+        self.db.refresh(task)
+        return task
+
+    def delete(self, task: MonitoringTask) -> None:
+        self.db.delete(task)
+        self.db.flush()
+
+    def pause(self, task: MonitoringTask) -> MonitoringTask:
+        task.is_active = False
+        self.db.flush()
+        self.db.refresh(task)
+        return task
+
+    def resume(self, task: MonitoringTask) -> MonitoringTask:
+        task.is_active = True
+        self.db.flush()
+        self.db.refresh(task)
+        return task

@@ -9,6 +9,12 @@ class CreateTaskRequest(BaseModel):
     target_url: HttpUrl
     check_interval: int = 60
 
+class UpdateTaskRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=150)
+    description: str | None = None
+    target_url: HttpUrl
+    check_interval: int
+
 
 class TaskResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

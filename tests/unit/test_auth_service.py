@@ -1,12 +1,49 @@
 import bcrypt
 import pytest
+from sqlalchemy import delete
 
 from app.database.session import SessionLocal
+from app.models.user import User
 from app.services.auth_service import AuthService
 from app.core.exceptions import (
     EmailAlreadyRegisteredError,
     InvalidCredentialsError,
 )
+
+
+TEST_EMAILS = {
+    "test@example.com",
+    "duplicate@example.com",
+    "login@example.com",
+    "wrong-password@example.com",
+    "short@example.com",
+    "does-not-exist@example.com",
+}
+
+
+@pytest.fixture(autouse=True)
+def clean_auth_test_users():
+    db = SessionLocal()
+
+    try:
+        db.execute(
+            delete(User).where(User.email.in_(TEST_EMAILS))
+        )
+        db.commit()
+    finally:
+        db.close()
+
+    yield
+
+    db = SessionLocal()
+
+    try:
+        db.execute(
+            delete(User).where(User.email.in_(TEST_EMAILS))
+        )
+        db.commit()
+    finally:
+        db.close()
 
 
 def test_register_user():
@@ -31,8 +68,8 @@ def test_register_user():
         )
 
     finally:
-        db.rollback()
         db.close()
+
 
 def test_register_user_rejects_short_password():
     db = SessionLocal()
@@ -48,7 +85,6 @@ def test_register_user_rejects_short_password():
             )
 
     finally:
-        db.rollback()
         db.close()
 
 
@@ -75,8 +111,8 @@ def test_register_user_rejects_duplicate_email():
             )
 
     finally:
-        db.rollback()
         db.close()
+
 
 def test_login_user_returns_access_token():
     db = SessionLocal()
@@ -98,7 +134,6 @@ def test_login_user_returns_access_token():
         assert token
 
     finally:
-        db.rollback()
         db.close()
 
 
@@ -114,14 +149,16 @@ def test_login_user_rejects_wrong_password():
             password="testpassword",
         )
 
-        with pytest.raises(InvalidCredentialsError, match="Invalid credentials"):
+        with pytest.raises(
+            InvalidCredentialsError,
+            match="Invalid credentials",
+        ):
             service.login_user(
                 email="wrong-password@example.com",
                 password="wrongpassword",
             )
 
     finally:
-        db.rollback()
         db.close()
 
 
@@ -131,12 +168,14 @@ def test_login_user_rejects_unknown_email():
     try:
         service = AuthService(db)
 
-        with pytest.raises(InvalidCredentialsError, match="Invalid credentials"):
+        with pytest.raises(
+            InvalidCredentialsError,
+            match="Invalid credentials",
+        ):
             service.login_user(
                 email="does-not-exist@example.com",
                 password="testpassword",
             )
 
     finally:
-        db.rollback()
         db.close()

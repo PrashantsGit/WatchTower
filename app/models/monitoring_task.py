@@ -71,3 +71,9 @@ class MonitoringTask(Base):
         "User",
         back_populates="monitoring_tasks",
     )
+
+    monitoring_rules = relationship(
+        "MonitoringRule",
+        back_populates="task",
+        cascade="all, delete-orphan",
+    )

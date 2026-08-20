@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>WatchTower — Dashboard</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <div class="dashboard-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <div class="sidebar-brand">
+                <h1>WATCHTOWER</h1>
+                <p>Monitor. Detect. Notify.</p>
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <a href="#" class="nav-item active">
+                    Dashboard
+                </a>
+
+                <a href="#" class="nav-item">
+                    Tasks
+                </a>
+
+                <a href="#" class="nav-item disabled">
+                    History
+                </a>
+
+                <a href="#" class="nav-item disabled">
+                    Settings
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+
+            <!-- Top bar -->
+            <header class="topbar">
+
+                <div>
+                    <h2>Monitoring Dashboard</h2>
+                    <p>Keep an eye on what matters.</p>
+                </div>
+
+                <div class="topbar-user">
+                    <span id="user-name">User</span>
+
+                    <button id="logout-button" class="logout-button">
+                        Logout
+                    </button>
+                </div>
+
+            </header>
+
+
+            <!-- Statistics -->
+            <section class="stats-grid">
+
+                <div class="stat-card">
+                    <span class="stat-label">Total Tasks</span>
+                    <strong id="total-tasks">0</strong>
+                </div>
+
+                <div class="stat-card">
+                    <span class="stat-label">Active</span>
+                    <strong id="active-tasks">0</strong>
+                </div>
+
+                <div class="stat-card">
+                    <span class="stat-label">Paused</span>
+                    <strong id="paused-tasks">0</strong>
+                </div>
+
+            </section>
+
+
+            <!-- Tasks -->
+            <section class="tasks-section">
+
+                <div class="section-header">
+
+                    <div>
+                        <h3>Your Monitoring Tasks</h3>
+                        <p>Tasks currently configured in WatchTower.</p>
+                    </div>
+
+                    <button id="add-task-button" class="primary-button add-task-button">
+                        + Add Task
+                    </button>
+
+                </div>
+
+
+                <div id="tasks-container" class="tasks-container">
+
+                    <div class="loading-message">
+                        Loading monitoring tasks...
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <script src="../js/dashboard.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Add Monitoring Rule - WatchTower</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <main class="page-container">
+
+        <div class="form-page">
+
+            <a
+                href="#"
+                id="back-button"
+                class="back-link"
+            >
+                ← Back to Task
+            </a>
+
+            <div class="form-card">
+
+                <div class="form-header">
+
+                    <div class="brand-small">
+                        WATCHTOWER
+                    </div>
+
+                    <h1>Add Monitoring Rule</h1>
+
+                    <p>
+                        Define when WatchTower should trigger an alert.
+                    </p>
+
+                </div>
+
+
+                <form id="rule-form">
+
+                    <!-- Rule Type -->
+
+                    <div class="form-group">
+
+                        <label for="rule-type">
+                            Rule Type
+                        </label>
+
+                        <select
+                            id="rule-type"
+                            name="rule_type"
+                            required
+                        >
+                            <option value="">
+                                Select rule type
+                            </option>
+
+                            <option value="PRICE">
+                                Price
+                            </option>
+
+                            <option value="STOCK">
+                                Stock Availability
+                            </option>
+
+                            <option value="KEYWORD">
+                                Keyword
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Operator -->
+
+                    <div class="form-group">
+
+                        <label for="operator">
+                            Condition
+                        </label>
+
+                        <select
+                            id="operator"
+                            name="operator"
+                            required
+                        >
+                            <option value="">
+                                Select condition
+                            </option>
+                        </select>
+
+                    </div>
+
+
+                    <!-- Target Value -->
+
+                    <div class="form-group">
+
+                        <label for="target-value">
+                            Target Value
+                        </label>
+
+                        <input
+                            type="text"
+                            id="target-value"
+                            name="target_value"
+                            placeholder="Enter target value"
+                            required
+                        >
+
+                        <small id="target-hint">
+                            Choose a rule type first.
+                        </small>
+
+                    </div>
+
+
+                    <div
+                        id="rule-error"
+                        class="form-error"
+                        style="display: none;"
+                    ></div>
+
+
+                    <button
+                        type="submit"
+                        id="create-rule-button"
+                        class="primary-button"
+                    >
+                        Create Rule
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <script src="../js/create-rule.js"></script>
+
+</body>
+
+</html>

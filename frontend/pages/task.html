@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>WatchTower - Task</title>
+
+    <link
+        rel="stylesheet"
+        href="../css/style.css"
+    >
+</head>
+
+<body>
+
+    <main class="page-container">
+
+        <!-- Back -->
+        <div class="page-header">
+
+            <button
+                type="button"
+                class="secondary-btn"
+                onclick="goBack()"
+            >
+                ← Back to Dashboard
+            </button>
+
+        </div>
+
+
+        <!-- Task Information -->
+        <section class="task-details-card">
+
+            <div class="task-details-header">
+
+                <div>
+                    <h1 id="task-name">
+                        Loading task...
+                    </h1>
+
+                    <p id="task-url">
+                        Loading...
+                    </p>
+                </div>
+
+                <span
+                    id="task-status"
+                    class="status-badge"
+                >
+                    Loading...
+                </span>
+
+            </div>
+
+
+            <div class="task-meta">
+
+                <div class="task-meta-item">
+
+                    <span class="meta-label">
+                        Check Interval
+                    </span>
+
+                    <span id="task-interval">
+                        -
+                    </span>
+
+                </div>
+
+                <div class="task-meta-item">
+
+                    <span class="meta-label">
+                        Last Checked
+                    </span>
+
+                    <span id="task-last-checked">
+                        Never
+                    </span>
+
+                </div>
+
+                <div class="task-meta-item">
+
+                    <span class="meta-label">
+                        Next Check
+                    </span>
+
+                    <span id="task-next-check">
+                        -
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Rules -->
+        <section class="rules-section">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>
+                        Monitoring Rules
+                    </h2>
+
+                    <p>
+                        Define when WatchTower should trigger an alert.
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    class="primary-btn"
+                    onclick="showCreateRule()"
+                >
+                    + Add Rule
+                </button>
+
+            </div>
+
+
+            <!-- Rules will be inserted here -->
+            <div id="rules-container">
+
+                <div class="empty-state">
+                    Loading rules...
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="../js/task.js"></script>
+
+</body>
+</html>

@@ -13,6 +13,7 @@ from app.core.exceptions import (
     InvalidCredentialsError,
     ResourceNotFoundError,
 )
+from app.api.routes.rules import router as rules_router
 
 
 app = FastAPI()
@@ -41,5 +42,10 @@ app.include_router(
 
 app.include_router(
     tasks_router,
+    prefix="/api",
+)
+
+app.include_router(
+    rules_router,
     prefix="/api",
 )

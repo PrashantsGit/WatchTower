@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>WatchTower — Create Task</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+
+    <div class="dashboard-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <div class="sidebar-brand">
+                <h1>WATCHTOWER</h1>
+                <p>Monitor. Detect. Notify.</p>
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <a href="dashboard.html" class="nav-item">
+                    Dashboard
+                </a>
+
+                <a href="#" class="nav-item active">
+                    Tasks
+                </a>
+
+                <a href="#" class="nav-item disabled">
+                    History
+                </a>
+
+                <a href="#" class="nav-item disabled">
+                    Settings
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- Main -->
+        <main class="dashboard-main">
+
+            <header class="topbar">
+
+                <div>
+                    <h2>Create Monitoring Task</h2>
+                    <p>Tell WatchTower what you want to monitor.</p>
+                </div>
+
+                <div class="topbar-user">
+
+                    <span id="user-name">
+                        User
+                    </span>
+
+                    <button
+                        id="logout-button"
+                        class="logout-button"
+                    >
+                        Logout
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <!-- Form -->
+            <section class="create-task-section">
+
+                <div class="create-task-card">
+
+                    <form id="create-task-form">
+
+                        <div class="form-group">
+
+                            <label for="task-name">
+                                Task Name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="task-name"
+                                name="name"
+                                placeholder="e.g. Monitor iPhone 15 Price"
+                                required
+                                maxlength="150"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="task-description">
+                                Description
+                            </label>
+
+                            <textarea
+                                id="task-description"
+                                name="description"
+                                placeholder="What are you monitoring?"
+                                rows="4"
+                            ></textarea>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="target-url">
+                                Target URL
+                            </label>
+
+                            <input
+                                type="url"
+                                id="target-url"
+                                name="target_url"
+                                placeholder="https://example.com/product"
+                                required
+                            >
+
+                        </div>
+
+
+                       <div class="form-group">
+
+    <label for="check-interval">
+        Check Interval
+    </label>
+
+    <select
+        id="check-interval"
+        name="check_interval"
+        required
+    >
+        <option value="30">30 minutes</option>
+        <option value="60" selected>1 hour</option>
+        <option value="120">2 hours</option>
+        <option value="240">4 hours</option>
+        <option value="720">12 hours</option>
+        <option value="1440">24 hours</option>
+    </select>
+
+    <small>
+        How often WatchTower should check the target.
+    </small>
+
+</div>
+
+                        <div
+                            id="form-message"
+                            class="form-message"
+                        ></div>
+
+
+                        <div class="form-actions">
+
+                            <button
+                                type="button"
+                                id="cancel-button"
+                                class="secondary-button"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="submit"
+                                id="create-button"
+                                class="primary-button"
+                            >
+                                Create Task
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <script src="../js/create-task.js"></script>
+
+</body>
+</html>

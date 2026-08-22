@@ -16,3 +16,7 @@ class EmailAlreadyRegisteredError(AppException):
 
 class ResourceNotFoundError(AppException):
     """Raised when a requested resource does not exist."""
+
+
+class RuleLimitExceededError(AppException):
+    """Raised when a monitoring task already has the maximum number of rules."""

@@ -488,3 +488,4 @@ def test_resume_task_rejects_other_user():
             db.commit()
 
         db.close()
+

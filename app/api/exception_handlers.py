@@ -5,6 +5,7 @@ from app.core.exceptions import (
     EmailAlreadyRegisteredError,
     InvalidCredentialsError,
     ResourceNotFoundError,
+    RuleLimitExceededError,
 )
 
 
@@ -47,6 +48,21 @@ def resource_not_found_handler(
         content={
             "error": {
                 "code": "RESOURCE_NOT_FOUND",
+                "message": exc.message,
+            }
+        },
+    )
+
+def rule_limit_exceeded_handler(
+    request: Request,
+    exc: RuleLimitExceededError,
+) -> JSONResponse:
+
+    return JSONResponse(
+        status_code=400,
+        content={
+            "error": {
+                "code": "RULE_LIMIT_EXCEEDED",
                 "message": exc.message,
             }
         },

@@ -907,3 +907,218 @@ body {
     }
 
 }
+
+/* ========================================
+   CREATE RULE
+======================================== */
+
+.form-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding-top: 20px;
+}
+
+
+/* Back Button */
+
+.form-page .back-link {
+    display: inline-block;
+    margin-bottom: 24px;
+
+    color: #8b98a8;
+    font-size: 13px;
+    text-decoration: none;
+
+    transition: color 0.2s ease;
+}
+
+.form-page .back-link:hover {
+    color: #4ade80;
+}
+
+
+/* Form Card */
+
+.form-card {
+    background: #111820;
+    border: 1px solid #26313d;
+    border-radius: 12px;
+    padding: 32px;
+}
+
+
+/* Header */
+
+.form-header {
+    margin-bottom: 30px;
+}
+
+.form-header .brand-small {
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+}
+
+.form-header h1 {
+    margin: 0;
+
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.form-header p {
+    margin-top: 8px;
+
+    color: #7f8b99;
+    font-size: 13px;
+}
+
+
+/* Form Groups */
+
+.form-group {
+    margin-bottom: 22px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+
+    color: #c7d0da;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+
+/* Inputs and Selects */
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    box-sizing: border-box;
+
+    background: #0b1016;
+    border: 1px solid #303b48;
+    border-radius: 7px;
+
+    color: #e5e7eb;
+
+    padding: 12px 14px;
+
+    font-family: inherit;
+    font-size: 13px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.form-group input::placeholder {
+    color: #506073;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #4ade80;
+    box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.08);
+}
+
+.form-group select {
+    cursor: pointer;
+}
+
+
+/* Hint */
+
+.form-group small {
+    display: block;
+
+    margin-top: 7px;
+
+    color: #687686;
+    font-size: 11px;
+}
+
+
+/* Error */
+
+.form-error {
+    margin-bottom: 18px;
+
+    padding: 11px 13px;
+
+    background: #251416;
+    border: 1px solid #6b3030;
+    border-radius: 7px;
+
+    color: #f87171;
+    font-size: 12px;
+}
+
+
+/* Create Rule Button */
+
+.form-card .primary-button {
+    width: auto;
+    min-width: 150px;
+
+    margin-top: 8px;
+
+    padding: 12px 24px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #22c55e;
+    color: #07100a;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.1s ease;
+}
+
+.form-card .primary-button:hover {
+    background: #4ade80;
+}
+
+.form-card .primary-button:active {
+    transform: translateY(1px);
+}
+
+.form-card .primary-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* Responsive */
+
+@media (max-width: 700px) {
+
+    .form-page {
+        padding-top: 10px;
+    }
+
+    .form-card {
+        padding: 24px 20px;
+    }
+
+    .form-header h1 {
+        font-size: 24px;
+    }
+
+    .form-card .primary-button {
+        width: 100%;
+    }
+}

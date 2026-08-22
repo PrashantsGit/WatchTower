@@ -1,12 +1,17 @@
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import ResourceNotFoundError
+from app.core.exceptions import (
+    ResourceNotFoundError,
+    RuleLimitExceededError,
+)
 from app.models.monitoring_rule import MonitoringRule
 from app.models.monitoring_task import MonitoringTask
 from app.repositories.monitoring_rule_repository import MonitoringRuleRepository
 
 
 class MonitoringRuleService:
+
+    MAX_RULES_PER_TASK = 3
 
     PRICE_OPERATORS = {
         "<",
@@ -109,6 +114,13 @@ class MonitoringRuleService:
             task_id=task_id,
             user_id=user_id,
         )
+
+        existing_rules = self.rule_repository.list_by_task(task_id)
+
+        if len(existing_rules) >= self.MAX_RULES_PER_TASK:
+            raise RuleLimitExceededError(
+                "A monitoring task can have a maximum of 3 rules."
+            )
 
         rule_type = self._validate_rule(
             rule_type=rule_type,

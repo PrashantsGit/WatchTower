@@ -77,3 +77,15 @@ class MonitoringTask(Base):
         back_populates="task",
         cascade="all, delete-orphan",
     )
+
+    history_events = relationship(
+        "HistoryEvent",
+        back_populates="task",
+        cascade="all, delete-orphan",
+    )
+
+    monitoring_snapshots = relationship(
+        "MonitoringSnapshot",
+        back_populates="task",
+        cascade="all, delete-orphan",
+    )

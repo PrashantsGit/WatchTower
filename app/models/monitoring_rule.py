@@ -55,3 +55,9 @@ class MonitoringRule(Base):
         "MonitoringTask",
         back_populates="monitoring_rules",
     )
+
+    history_events = relationship(
+        "HistoryEvent",
+        back_populates="rule",
+        cascade="all, delete-orphan",
+    )

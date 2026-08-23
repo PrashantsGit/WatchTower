@@ -152,10 +152,31 @@ class MonitoringEngineService:
         user_id: int,
     ) -> MonitoringExecutionContext | None:
 
-        context = self.prepare_execution(
-            task_id=task_id,
-            user_id=user_id,
-        )
+        context = None
+
+        try:
+            context = self.prepare_execution(
+                task_id=task_id,
+                user_id=user_id,
+            )
+        except Exception:
+            task = self._get_owned_task(
+                task_id=task_id,
+                user_id=user_id,
+            )
+
+            if task is None:
+                return None
+
+            self.snapshot_service.create_snapshot(
+                task_id=task.id,
+                user_id=user_id,
+                snapshot_data={},
+                content_hash=self._calculate_content_hash({}),
+                execution_status="FAILED",
+            )
+
+            return None
 
         if context is None:
             return None
@@ -200,7 +221,6 @@ class MonitoringEngineService:
             )
 
         return context
-
     @staticmethod
     def _calculate_content_hash(
         snapshot_data: dict,

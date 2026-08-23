@@ -520,3 +520,102 @@ def test_execute_creates_history_event_when_rule_matches(
     assert event.previous_value is None
     assert event.current_value == "45000"
     assert event.event_message == "Price condition triggered."
+
+def test_execute_creates_failed_snapshot_when_retrieval_fails(
+    db,
+    task,
+):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    retriever.retrieve.side_effect = Exception(
+        "Failed to retrieve webpage"
+    )
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="PRICE",
+        operator="<",
+        target_value="50000",
+        is_enabled=True,
+    )
+
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+
+    result = service.execute(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    assert result is None
+
+    snapshots = service.snapshot_service.list_snapshots(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    assert len(snapshots) == 1
+
+    snapshot = snapshots[0]
+
+    assert snapshot.task_id == task.id
+    assert snapshot.execution_status == "FAILED"
+    assert snapshot.snapshot_data == {}
+
+    extractor.extract.assert_not_called()
+    evaluator.evaluate_all.assert_not_called()
+
+
+def test_execute_does_not_create_history_event_when_retrieval_fails(
+    db,
+    task,
+):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    retriever.retrieve.side_effect = Exception(
+        "Failed to retrieve webpage"
+    )
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="PRICE",
+        operator="<",
+        target_value="50000",
+        is_enabled=True,
+    )
+
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+
+    result = service.execute(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    assert result is None
+
+    events = service.history_event_service.list_events(
+        task.id
+    )
+
+    assert events == []

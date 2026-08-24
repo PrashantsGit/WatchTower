@@ -59,3 +59,21 @@ class MonitoringTaskRepository:
         self.db.flush()
         self.db.refresh(task)
         return task
+
+    def list_due_active_tasks(
+        self,
+        now,
+    ) -> list[MonitoringTask]:
+        statement = (
+            select(MonitoringTask)
+            .where(
+                MonitoringTask.is_active.is_(True),
+                MonitoringTask.next_execution_at.is_not(None),
+                MonitoringTask.next_execution_at <= now,
+            )
+            .order_by(
+                MonitoringTask.next_execution_at.asc()
+            )
+        )
+
+        return list(self.db.scalars(statement).all())

@@ -4,8 +4,7 @@ from app.scheduler.runner import SchedulerRunner
 
 
 def test_runner_starts_scheduler():
-    engine = Mock()
-    runner = SchedulerRunner(engine=engine)
+    runner = SchedulerRunner()
 
     with patch.object(runner.scheduler, "start") as start_mock:
         runner.start()
@@ -18,8 +17,7 @@ def test_runner_starts_scheduler():
 
 
 def test_runner_stops_scheduler():
-    engine = Mock()
-    runner = SchedulerRunner(engine=engine)
+    runner = SchedulerRunner()
 
     runner.scheduler = Mock()
     runner.scheduler.running = True
@@ -27,25 +25,32 @@ def test_runner_stops_scheduler():
     runner.stop()
 
     runner.scheduler.shutdown.assert_called_once_with()
-    
+
+
+@patch("app.scheduler.runner.MonitoringEngineService")
 @patch("app.scheduler.runner.SchedulerService")
 @patch("app.scheduler.runner.SessionLocal")
-def test_runner_creates_scheduler_service_and_runs_pending(
+def test_runner_creates_services_and_runs_pending(
     session_local_mock,
     scheduler_service_mock,
+    engine_service_mock,
 ):
-    engine = Mock()
     db = Mock()
 
     session_local_mock.return_value = db
 
+    engine = engine_service_mock.return_value
     scheduler_service = scheduler_service_mock.return_value
 
-    runner = SchedulerRunner(engine=engine)
+    runner = SchedulerRunner()
 
     runner.run_pending()
 
     session_local_mock.assert_called_once_with()
+
+    engine_service_mock.assert_called_once_with(
+        db=db,
+    )
 
     scheduler_service_mock.assert_called_once_with(
         db=db,

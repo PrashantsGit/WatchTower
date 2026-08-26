@@ -1,13 +1,13 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from app.database.session import SessionLocal
+from app.monitoring.engine import MonitoringEngineService
 from app.scheduler.service import SchedulerService
 
 
 class SchedulerRunner:
 
-    def __init__(self, engine):
-        self.engine = engine
+    def __init__(self):
         self.scheduler = BackgroundScheduler()
 
     def start(self) -> None:
@@ -29,9 +29,13 @@ class SchedulerRunner:
         db = SessionLocal()
 
         try:
+            engine = MonitoringEngineService(
+                db=db,
+            )
+
             scheduler_service = SchedulerService(
                 db=db,
-                engine=self.engine,
+                engine=engine,
             )
 
             scheduler_service.run_pending()

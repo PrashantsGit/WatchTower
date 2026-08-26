@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 
+from app.monitoring.engine import MonitoringEngineService
+from app.scheduler.runner import SchedulerRunner
+
 from app.api.routes.tasks import router as tasks_router
 
 from app.api.exception_handlers import (

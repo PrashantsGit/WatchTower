@@ -2,150 +2,358 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Add Monitoring Rule - WatchTower</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <link rel="stylesheet" href="../css/style.css">
+    <title>Create Rule — WatchTower</title>
+
+
+    <!-- ========================================================
+         WATCHTOWER DESIGN SYSTEM
+         ======================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="../css/design-system.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/app-shell.css"
+    >
+
+    <!-- Create Rule page styles -->
+    <link
+        rel="stylesheet"
+        href="../css/create-rule.css"
+    >
+
 </head>
 
-<body>
 
-    <main class="page-container">
+<body data-page="tasks">
 
-        <div class="form-page">
 
-            <a
-                href="#"
-                id="back-button"
-                class="back-link"
+    <!-- ========================================================
+         APPLICATION SHELL
+         ======================================================== -->
+
+    <div class="app-shell">
+
+
+        <!-- ====================================================
+             SIDEBAR
+             ==================================================== -->
+
+        <aside
+            id="app-sidebar"
+            class="sidebar"
+        >
+            <!-- Loaded by components.js -->
+        </aside>
+
+
+        <!-- ====================================================
+             MAIN APPLICATION AREA
+             ==================================================== -->
+
+        <main class="app-main">
+
+
+            <!-- ==================================================
+                 HEADER
+                 ================================================== -->
+
+            <header
+                id="app-header"
+                class="topbar"
             >
-                ← Back to Task
-            </a>
+                <!-- Loaded by components.js -->
+            </header>
 
-            <div class="form-card">
 
-                <div class="form-header">
+            <!-- ==================================================
+                 PAGE CONTENT
+                 ================================================== -->
 
-                    <div class="brand-small">
-                        WATCHTOWER
-                    </div>
+            <div class="page-content">
 
-                    <h1>Add Monitoring Rule</h1>
+                <div class="content-container create-rule-container">
 
-                    <p>
-                        Define when WatchTower should trigger an alert.
-                    </p>
+
+                    <!-- ==================================================
+                         BACK LINK
+                         ================================================== -->
+
+                    <a
+                        href="#"
+                        id="back-button"
+                        class="create-rule-back"
+                    >
+                        <span aria-hidden="true">←</span>
+                        Back to Task
+                    </a>
+
+
+                    <!-- ==================================================
+                         PAGE INTRO
+                         ================================================== -->
+
+                    <section class="create-rule-intro">
+
+                        <div>
+
+                            <div class="create-rule-eyebrow">
+                                WATCHTOWER
+                            </div>
+
+                            <h1>
+                                Add Monitoring Rule
+                            </h1>
+
+                            <p>
+                                Define when WatchTower should trigger an alert.
+                            </p>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- ==================================================
+                         RULE FORM
+                         ================================================== -->
+
+                    <section class="create-rule-panel">
+
+
+                        <form id="rule-form">
+
+
+                            <!-- Rule Type -->
+
+                            <div class="rule-form-group">
+
+                                <label for="rule-type">
+                                    Rule Type
+                                </label>
+
+                                <select
+                                    id="rule-type"
+                                    name="rule_type"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select rule type
+                                    </option>
+
+                                    <option value="PRICE">
+                                        Price
+                                    </option>
+
+                                    <option value="STOCK">
+                                        Stock Availability
+                                    </option>
+
+                                    <option value="KEYWORD">
+                                        Keyword
+                                    </option>
+
+                                </select>
+
+                                <small>
+                                    Choose what WatchTower should monitor.
+                                </small>
+
+                            </div>
+
+
+                            <!-- Condition -->
+
+                            <div class="rule-form-group">
+
+                                <label for="operator">
+                                    Condition
+                                </label>
+
+                                <select
+                                    id="operator"
+                                    name="operator"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select condition
+                                    </option>
+
+                                </select>
+
+                                <small>
+                                    Choose when the monitoring rule should trigger.
+                                </small>
+
+                            </div>
+
+
+                            <!-- Target Value -->
+
+                            <div class="rule-form-group">
+
+                                <label for="target-value">
+                                    Target Value
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="target-value"
+                                    name="target_value"
+                                    placeholder="Enter target value"
+                                    required
+                                    autocomplete="off"
+                                >
+
+                                <small id="target-hint">
+                                    Choose a rule type first.
+                                </small>
+
+                            </div>
+
+
+                            <!-- Error -->
+
+                            <div
+                                id="rule-error"
+                                class="rule-form-error"
+                                role="alert"
+                                aria-live="polite"
+                            ></div>
+
+
+                            <!-- Actions -->
+
+                            <div class="rule-form-actions">
+
+                                <button
+                                    type="button"
+                                    id="cancel-rule-button"
+                                    class="secondary-button"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    id="create-rule-button"
+                                    class="primary-button"
+                                >
+                                    Create Rule
+                                </button>
+
+                            </div>
+
+
+                        </form>
+
+
+                    </section>
+
+
+                    <!-- ==================================================
+                         HELPER INFORMATION
+                         ================================================== -->
+
+                    <section class="rule-help">
+
+                        <div class="rule-help-icon">
+                            ?
+                        </div>
+
+                        <div>
+
+                            <h2>
+                                How monitoring rules work
+                            </h2>
+
+                            <p>
+                                WatchTower checks the target according to your
+                                task's configured interval. When the selected
+                                condition is met, the rule can trigger an alert.
+                            </p>
+
+                        </div>
+
+                    </section>
+
 
                 </div>
 
-
-                <form id="rule-form">
-
-                    <!-- Rule Type -->
-
-                    <div class="form-group">
-
-                        <label for="rule-type">
-                            Rule Type
-                        </label>
-
-                        <select
-                            id="rule-type"
-                            name="rule_type"
-                            required
-                        >
-                            <option value="">
-                                Select rule type
-                            </option>
-
-                            <option value="PRICE">
-                                Price
-                            </option>
-
-                            <option value="STOCK">
-                                Stock Availability
-                            </option>
-
-                            <option value="KEYWORD">
-                                Keyword
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    <!-- Operator -->
-
-                    <div class="form-group">
-
-                        <label for="operator">
-                            Condition
-                        </label>
-
-                        <select
-                            id="operator"
-                            name="operator"
-                            required
-                        >
-                            <option value="">
-                                Select condition
-                            </option>
-                        </select>
-
-                    </div>
-
-
-                    <!-- Target Value -->
-
-                    <div class="form-group">
-
-                        <label for="target-value">
-                            Target Value
-                        </label>
-
-                        <input
-                            type="text"
-                            id="target-value"
-                            name="target_value"
-                            placeholder="Enter target value"
-                            required
-                        >
-
-                        <small id="target-hint">
-                            Choose a rule type first.
-                        </small>
-
-                    </div>
-
-
-                    <div
-                        id="rule-error"
-                        class="form-error"
-                        style="display: none;"
-                    ></div>
-
-
-                    <button
-                        type="submit"
-                        id="create-rule-button"
-                        class="primary-button"
-                    >
-                        Create Rule
-                    </button>
-
-                </form>
-
             </div>
 
-        </div>
 
-    </main>
+            <!-- ==================================================
+                 FOOTER
+                 ================================================== -->
 
+            <footer
+                id="app-footer"
+            >
+                <!-- Loaded by components.js -->
+            </footer>
+
+
+        </main>
+
+    </div>
+
+
+    <!-- ========================================================
+         SHARED COMPONENTS
+         ======================================================== -->
+
+    <script src="../js/components.js"></script>
+
+
+    <!-- ========================================================
+         PAGE LOGIC
+         ======================================================== -->
 
     <script src="../js/create-rule.js"></script>
+
+
+    <!-- ========================================================
+         PAGE INITIALIZATION
+         ======================================================== -->
+
+    <script>
+
+        document
+            .getElementById("cancel-rule-button")
+            .addEventListener("click", () => {
+
+                const params =
+                    new URLSearchParams(window.location.search);
+
+                const taskId =
+                    params.get("task_id");
+
+                if (taskId) {
+                    window.location.href =
+                        `task.html?id=${taskId}`;
+                } else {
+                    window.location.href =
+                        "dashboard.html";
+                }
+
+            });
+
+    </script>
+
 
 </body>
 

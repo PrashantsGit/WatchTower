@@ -1,0 +1,336 @@
+/* ============================================================
+   WATCHTOWER — LOGIN
+   ============================================================ */
+
+.auth-page {
+    min-height: 100vh;
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(
+            circle at 50% 35%,
+            rgba(42, 45, 65, 0.34),
+            transparent 48%
+        ),
+        #070916;
+
+    color: #e7e9ef;
+}
+
+
+/* ============================================================
+   AUTH CONTAINER
+   ============================================================ */
+
+.auth-container {
+    width: 100%;
+    max-width: 430px;
+    padding: 32px 20px;
+}
+
+
+/* ============================================================
+   AUTH CARD
+   ============================================================ */
+
+.auth-card {
+    padding: 40px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(18, 22, 34, 0.98),
+            rgba(11, 14, 24, 0.98)
+        );
+
+    border: 1px solid #272d3c;
+    border-radius: 14px;
+
+    box-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.34);
+}
+
+
+/* ============================================================
+   BRAND
+   ============================================================ */
+
+.auth-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    margin-bottom: 34px;
+
+    text-align: center;
+}
+
+.auth-brand-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 52px;
+    height: 52px;
+    margin-bottom: 14px;
+
+    color: #f2cc71;
+
+    background: rgba(242, 204, 113, 0.07);
+
+    border: 1px solid rgba(242, 204, 113, 0.28);
+    border-radius: 10px;
+
+    font-size: 15px;
+    font-weight: 750;
+    letter-spacing: 0.08em;
+}
+
+.auth-brand-name {
+    color: #f1f2f6;
+
+    font-size: 18px;
+    font-weight: 750;
+    letter-spacing: 0.16em;
+}
+
+.auth-brand-tagline {
+    margin-top: 6px;
+
+    color: #6f7a91;
+
+    font-size: 8px;
+    font-weight: 650;
+    letter-spacing: 0.16em;
+}
+
+
+/* ============================================================
+   INTRO
+   ============================================================ */
+
+.auth-intro {
+    margin-bottom: 26px;
+}
+
+.auth-intro h1 {
+    margin: 0;
+
+    color: #eef0f5;
+
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.auth-intro p {
+    margin: 7px 0 0;
+
+    color: #7c879e;
+
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+
+/* ============================================================
+   FORM
+   ============================================================ */
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    color: #aeb6c7;
+
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.form-input {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 12px 13px;
+
+    color: #e8ebf1;
+    background: #0c0f19;
+
+    border: 1px solid #2a3040;
+    border-radius: 7px;
+
+    outline: none;
+
+    font-family: inherit;
+    font-size: 13px;
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.18s ease;
+}
+
+.form-input::placeholder {
+    color: #4f596e;
+}
+
+.form-input:hover {
+    border-color: #343b4d;
+}
+
+.form-input:focus {
+    background: #0d101b;
+    border-color: rgba(242, 204, 113, 0.62);
+
+    box-shadow:
+        0 0 0 3px rgba(242, 204, 113, 0.08);
+}
+
+
+/* ============================================================
+   ERROR
+   ============================================================ */
+
+.auth-error {
+    padding: 11px 12px;
+
+    color: #e8a2a2;
+
+    background: rgba(125, 45, 45, 0.12);
+
+    border: 1px solid rgba(190, 86, 86, 0.25);
+    border-radius: 7px;
+
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+
+/* ============================================================
+   SUBMIT
+   ============================================================ */
+
+.auth-submit {
+    width: 100%;
+
+    margin-top: 2px;
+    padding: 12px 16px;
+
+    color: #11131a;
+    background: #f2cc71;
+
+    border: 1px solid #f2cc71;
+    border-radius: 7px;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 750;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.auth-submit:hover {
+    background: #f5d486;
+    border-color: #f5d486;
+
+    box-shadow:
+        0 8px 24px rgba(242, 204, 113, 0.12);
+}
+
+.auth-submit:active {
+    transform: translateY(1px);
+}
+
+.auth-submit:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+
+/* ============================================================
+   SECONDARY ACTION
+   ============================================================ */
+
+.auth-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    margin-top: 24px;
+
+    color: #69748a;
+
+    font-size: 12px;
+}
+
+.auth-link {
+    color: #f2cc71;
+
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.auth-link:hover {
+    text-decoration: underline;
+}
+
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+
+.auth-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    margin-top: 20px;
+
+    color: #4e586c;
+
+    font-size: 9px;
+    font-weight: 650;
+    letter-spacing: 0.1em;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 480px) {
+
+    .auth-container {
+        padding: 20px 16px;
+    }
+
+    .auth-card {
+        padding: 30px 22px;
+    }
+
+    .auth-brand {
+        margin-bottom: 28px;
+    }
+
+}

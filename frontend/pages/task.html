@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -8,141 +10,329 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>WatchTower - Task</title>
+    <title>Task Details — WatchTower</title>
+
+
+    <!-- ========================================================
+         WATCHTOWER STYLES
+         ======================================================== -->
 
     <link
         rel="stylesheet"
-        href="../css/style.css"
+        href="../css/design-system.css"
     >
+
+    <link
+        rel="stylesheet"
+        href="../css/app-shell.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/task.css"
+    >
+
 </head>
 
-<body>
 
-    <main class="page-container">
+<body data-page="tasks">
 
-        <!-- Back -->
-        <div class="page-header">
 
-            <button
-                type="button"
-                class="secondary-btn"
-                onclick="goBack()"
-            >
-                ← Back to Dashboard
-            </button>
+    <!-- ========================================================
+         APPLICATION SHELL
+         ======================================================== -->
+
+    <div class="app-shell">
+
+
+        <!-- ====================================================
+             SIDEBAR
+             ==================================================== -->
+
+        <div
+            id="app-sidebar"
+            class="app-sidebar"
+        ></div>
+
+
+        <!-- ====================================================
+             MAIN APPLICATION AREA
+             ==================================================== -->
+
+        <div class="app-main">
+
+
+            <!-- =================================================
+                 HEADER
+                 ================================================= -->
+
+            <div
+                id="app-header"
+                class="app-header"
+            ></div>
+
+
+            <!-- =================================================
+                 PAGE CONTENT
+                 ================================================= -->
+
+            <main class="page-content">
+
+                <div class="content-container">
+
+
+                    <!-- =========================================
+                         PAGE INTRO
+                         ========================================= -->
+
+                    <section class="task-page-intro">
+
+                        <div>
+
+                            <a
+                                href="dashboard.html"
+                                class="back-link"
+                            >
+                                <span aria-hidden="true">←</span>
+                                Back to Dashboard
+                            </a>
+
+
+                            <h1>
+                                Task Details
+                            </h1>
+
+                            <p>
+                                Monitor configuration and activity
+                            </p>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- =========================================
+                         TASK INFORMATION
+                         ========================================= -->
+
+                    <section class="task-details-panel">
+
+                        <div class="panel-header">
+
+                            <div>
+
+                                <h2 class="panel-title">
+                                    Task Information
+                                </h2>
+
+                                <p class="panel-description">
+                                    Current configuration and monitoring state
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="task-information">
+
+
+                            <!-- Task Name -->
+
+                            <div class="task-information-item">
+
+                                <span class="information-label">
+                                    Task Name
+                                </span>
+
+                                <strong
+                                    id="task-name"
+                                    class="information-value"
+                                >
+                                    Loading...
+                                </strong>
+
+                            </div>
+
+
+                            <!-- Target URL -->
+
+                            <div class="task-information-item">
+
+                                <span class="information-label">
+                                    Target URL
+                                </span>
+
+                                <a
+                                    id="task-url"
+                                    class="information-value information-link"
+                                    href="#"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Loading...
+                                </a>
+
+                            </div>
+
+
+                            <!-- Status -->
+
+                            <div class="task-information-item">
+
+                                <span class="information-label">
+                                    Status
+                                </span>
+
+                                <span
+                                    id="task-status"
+                                    class="task-status"
+                                >
+                                    Loading...
+                                </span>
+
+                            </div>
+
+
+                            <!-- Check Interval -->
+
+                            <div class="task-information-item">
+
+                                <span class="information-label">
+                                    Check Interval
+                                </span>
+
+                                <strong
+                                    id="task-interval"
+                                    class="information-value"
+                                >
+                                    Loading...
+                                </strong>
+
+                            </div>
+
+
+                            <!-- Last Checked -->
+
+                            <div class="task-information-item">
+
+                                <span class="information-label">
+                                    Last Checked
+                                </span>
+
+                                <strong
+                                    id="task-last-checked"
+                                    class="information-value"
+                                >
+                                    Loading...
+                                </strong>
+
+                            </div>
+
+
+                            <!-- Next Check -->
+
+                            <div class="task-information-item">
+
+                                <span class="information-label">
+                                    Next Check
+                                </span>
+
+                                <strong
+                                    id="task-next-check"
+                                    class="information-value"
+                                >
+                                    Loading...
+                                </strong>
+
+                            </div>
+
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- =========================================
+                         MONITORING RULES
+                         ========================================= -->
+
+                    <section class="task-details-panel rules-panel">
+
+                        <div class="panel-header">
+
+                            <div>
+
+                                <h2 class="panel-title">
+                                    Monitoring Rules
+                                </h2>
+
+                                <p class="panel-description">
+                                    Define what WatchTower should monitor
+                                </p>
+
+                            </div>
+
+
+                            <button
+    type="button"
+    id="add-rule-button"
+    class="primary-btn"
+>
+    + Add Rule
+</button>
+
+                        </div>
+
+
+                        <div
+                            id="rules-container"
+                            class="rules-container"
+                        >
+
+                            <div class="loading-message">
+                                Loading monitoring rules...
+                            </div>
+
+                        </div>
+
+                    </section>
+
+
+                </div>
+
+            </main>
+
+
+            <!-- =================================================
+                 FOOTER
+                 ================================================= -->
+
+            <div
+                id="app-footer"
+                class="app-footer"
+            ></div>
+
 
         </div>
 
-
-        <!-- Task Information -->
-        <section class="task-details-card">
-
-            <div class="task-details-header">
-
-                <div>
-                    <h1 id="task-name">
-                        Loading task...
-                    </h1>
-
-                    <p id="task-url">
-                        Loading...
-                    </p>
-                </div>
-
-                <span
-                    id="task-status"
-                    class="status-badge"
-                >
-                    Loading...
-                </span>
-
-            </div>
+    </div>
 
 
-            <div class="task-meta">
+    <!-- ========================================================
+         SHARED COMPONENTS
+         ======================================================== -->
 
-                <div class="task-meta-item">
-
-                    <span class="meta-label">
-                        Check Interval
-                    </span>
-
-                    <span id="task-interval">
-                        -
-                    </span>
-
-                </div>
-
-                <div class="task-meta-item">
-
-                    <span class="meta-label">
-                        Last Checked
-                    </span>
-
-                    <span id="task-last-checked">
-                        Never
-                    </span>
-
-                </div>
-
-                <div class="task-meta-item">
-
-                    <span class="meta-label">
-                        Next Check
-                    </span>
-
-                    <span id="task-next-check">
-                        -
-                    </span>
-
-                </div>
-
-            </div>
-
-        </section>
+    <script src="../js/components.js"></script>
 
 
-        <!-- Rules -->
-        <section class="rules-section">
-
-            <div class="section-header">
-
-                <div>
-                    <h2>
-                        Monitoring Rules
-                    </h2>
-
-                    <p>
-                        Define when WatchTower should trigger an alert.
-                    </p>
-                </div>
-
-                <button
-                    type="button"
-                    class="primary-btn"
-                    onclick="showCreateRule()"
-                >
-                    + Add Rule
-                </button>
-
-            </div>
-
-
-            <!-- Rules will be inserted here -->
-            <div id="rules-container">
-
-                <div class="empty-state">
-                    Loading rules...
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
-
+    <!-- ========================================================
+         TASK PAGE LOGIC
+         ======================================================== -->
 
     <script src="../js/task.js"></script>
 
+
 </body>
+
 </html>

@@ -1,25 +1,70 @@
+/*
+ * WatchTower
+ * Task Details Page
+ *
+ * Responsible for:
+ * - Loading task information
+ * - Loading monitoring rules
+ * - Rendering task state
+ * - Navigating to create-rule
+ *
+ * Page structure and shared components are handled separately.
+ */
+
+
+/* ============================================================
+   CONFIGURATION
+   ============================================================ */
+
 const API_BASE_URL = "http://127.0.0.1:8000/api";
 
 const token = localStorage.getItem("access_token");
 
 const params = new URLSearchParams(window.location.search);
+
 const taskId = params.get("id");
 
 
+/* ============================================================
+   AUTHENTICATION / ROUTING GUARDS
+   ============================================================ */
+
 if (!token) {
+
     window.location.href = "../index.html";
+
 }
 
 
 if (!taskId) {
+
     window.location.href = "dashboard.html";
+
 }
 
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
 
 function goBack() {
+
     window.location.href = "dashboard.html";
+
 }
 
+
+function showCreateRule() {
+
+    window.location.href =
+        `create-rule.html?task_id=${encodeURIComponent(taskId)}`;
+
+}
+
+
+/* ============================================================
+   LOAD TASK
+   ============================================================ */
 
 async function loadTask() {
 
@@ -29,29 +74,55 @@ async function loadTask() {
             `${API_BASE_URL}/tasks/${taskId}`,
             {
                 method: "GET",
+
                 headers: {
                     "Authorization": `Bearer ${token}`,
-                },
+                    "Accept": "application/json"
+                }
             }
         );
 
 
+        /* ----------------------------------------------------
+           SESSION EXPIRED
+           ---------------------------------------------------- */
+
         if (response.status === 401) {
+
             localStorage.removeItem("access_token");
+
             window.location.href = "../index.html";
+
             return;
+
         }
 
+
+        /* ----------------------------------------------------
+           TASK NOT FOUND
+           ---------------------------------------------------- */
 
         if (response.status === 404) {
+
             alert("Monitoring task not found.");
+
             window.location.href = "dashboard.html";
+
             return;
+
         }
 
 
+        /* ----------------------------------------------------
+           OTHER API ERROR
+           ---------------------------------------------------- */
+
         if (!response.ok) {
-            throw new Error("Failed to load monitoring task.");
+
+            throw new Error(
+                `Failed to load monitoring task (${response.status})`
+            );
+
         }
 
 
@@ -59,73 +130,205 @@ async function loadTask() {
 
         renderTask(task);
 
-    } catch (error) {
+    }
 
-        console.error("Task loading error:", error);
+    catch (error) {
 
-        document.getElementById("task-name").textContent =
-            "Unable to load task.";
+        console.error(
+            "WatchTower: Task loading error:",
+            error
+        );
+
+
+        const taskName =
+            document.getElementById("task-name");
+
+
+        if (taskName) {
+
+            taskName.textContent =
+                "Unable to load task.";
+
+        }
 
     }
+
 }
 
+
+/* ============================================================
+   RENDER TASK
+   ============================================================ */
 
 function renderTask(task) {
 
-    document.getElementById("task-name").textContent =
-        task.name;
+    const taskName =
+        document.getElementById("task-name");
 
-    document.getElementById("task-url").textContent =
-        task.target_url;
+    const taskUrl =
+        document.getElementById("task-url");
 
-    document.getElementById("task-status").textContent =
-        task.is_active ? "Active" : "Paused";
+    const taskStatus =
+        document.getElementById("task-status");
 
-    document.getElementById("task-interval").textContent =
-        formatInterval(task.check_interval);
+    const taskInterval =
+        document.getElementById("task-interval");
 
-    document.getElementById("task-last-checked").textContent =
-        task.last_checked_at
-            ? formatDate(task.last_checked_at)
-            : "Never";
+    const taskLastChecked =
+        document.getElementById("task-last-checked");
 
-    document.getElementById("task-next-check").textContent =
-        task.next_execution_at
-            ? formatDate(task.next_execution_at)
-            : "-";
+    const taskNextCheck =
+        document.getElementById("task-next-check");
+
+
+    if (taskName) {
+
+        taskName.textContent =
+            task.name || "Unnamed Task";
+
+    }
+
+
+    if (taskUrl) {
+
+        taskUrl.textContent =
+            task.target_url || "-";
+
+    }
+
+
+    if (taskStatus) {
+
+        taskStatus.textContent =
+            task.is_active
+                ? "Active"
+                : "Paused";
+
+
+        taskStatus.classList.toggle(
+            "status-active",
+            Boolean(task.is_active)
+        );
+
+        taskStatus.classList.toggle(
+            "status-paused",
+            !task.is_active
+        );
+
+    }
+
+
+    if (taskInterval) {
+
+        taskInterval.textContent =
+            formatInterval(task.check_interval);
+
+    }
+
+
+    if (taskLastChecked) {
+
+        taskLastChecked.textContent =
+            task.last_checked_at
+                ? formatDate(task.last_checked_at)
+                : "Never";
+
+    }
+
+
+    if (taskNextCheck) {
+
+        taskNextCheck.textContent =
+            task.next_execution_at
+                ? formatDate(task.next_execution_at)
+                : "-";
+
+    }
+
 }
 
+
+/* ============================================================
+   FORMAT INTERVAL
+   ============================================================ */
 
 function formatInterval(minutes) {
 
-    if (minutes < 60) {
-        return `${minutes} minutes`;
+    if (
+        minutes === null ||
+        minutes === undefined ||
+        Number.isNaN(Number(minutes))
+    ) {
+
+        return "-";
+
     }
+
+
+    minutes = Number(minutes);
+
+
+    if (minutes < 60) {
+
+        return `${minutes} minute${minutes === 1 ? "" : "s"}`;
+
+    }
+
 
     if (minutes % 60 === 0) {
 
-        const hours = minutes / 60;
+        const hours =
+            minutes / 60;
 
-        if (hours === 1) {
-            return "1 hour";
-        }
 
-        return `${hours} hours`;
+        return `${hours} hour${hours === 1 ? "" : "s"}`;
+
     }
 
+
     return `${minutes} minutes`;
+
 }
 
+
+/* ============================================================
+   FORMAT DATE
+   ============================================================ */
 
 function formatDate(value) {
 
-    const date = new Date(value);
+    const date =
+        new Date(value);
+
+
+    if (Number.isNaN(date.getTime())) {
+
+        return "-";
+
+    }
+
 
     return date.toLocaleString();
+
 }
 
 
+/* ============================================================
+   LOAD MONITORING RULES
+   ============================================================ */
+
 async function loadRules() {
+
+    const container =
+        document.getElementById("rules-container");
+
+
+    if (!container) {
+
+        return;
+
+    }
+
 
     try {
 
@@ -133,53 +336,90 @@ async function loadRules() {
             `${API_BASE_URL}/tasks/${taskId}/rules`,
             {
                 method: "GET",
+
                 headers: {
                     "Authorization": `Bearer ${token}`,
-                },
+                    "Accept": "application/json"
+                }
             }
         );
 
 
+        /* ----------------------------------------------------
+           SESSION EXPIRED
+           ---------------------------------------------------- */
+
         if (response.status === 401) {
+
             localStorage.removeItem("access_token");
+
             window.location.href = "../index.html";
+
             return;
+
         }
 
 
+        /* ----------------------------------------------------
+           TASK NOT FOUND
+           ---------------------------------------------------- */
+
         if (response.status === 404) {
-            document.getElementById("rules-container").innerHTML = `
+
+            container.innerHTML = `
                 <div class="empty-state">
                     Monitoring task not found.
                 </div>
             `;
 
             return;
+
         }
 
+
+        /* ----------------------------------------------------
+           OTHER API ERROR
+           ---------------------------------------------------- */
 
         if (!response.ok) {
-            throw new Error("Failed to load monitoring rules.");
+
+            throw new Error(
+                `Failed to load monitoring rules (${response.status})`
+            );
+
         }
 
 
-        const rules = await response.json();
+        const rules =
+            await response.json();
+
 
         renderRules(rules);
 
-    } catch (error) {
+    }
 
-        console.error("Rule loading error:", error);
+    catch (error) {
 
-        document.getElementById("rules-container").innerHTML = `
+        console.error(
+            "WatchTower: Rule loading error:",
+            error
+        );
+
+
+        container.innerHTML = `
             <div class="empty-state">
                 Unable to load monitoring rules.
             </div>
         `;
 
     }
+
 }
 
+
+/* ============================================================
+   RENDER RULES
+   ============================================================ */
 
 function renderRules(rules) {
 
@@ -187,72 +427,176 @@ function renderRules(rules) {
         document.getElementById("rules-container");
 
 
-    if (rules.length === 0) {
+    if (!container) {
+
+        return;
+
+    }
+
+
+    if (
+        !Array.isArray(rules) ||
+        rules.length === 0
+    ) {
 
         container.innerHTML = `
             <div class="empty-state">
-                No monitoring rules configured yet.
-                Add your first rule to start monitoring.
+                <div class="empty-state-title">
+                    No monitoring rules configured
+                </div>
+
+                <div class="empty-state-description">
+                    Add your first rule to start monitoring.
+                </div>
             </div>
         `;
 
         return;
+
     }
 
 
-    container.innerHTML = rules.map(rule => {
+    container.innerHTML =
+        rules.map(rule => {
 
-        const statusText =
-            rule.is_enabled ? "Enabled" : "Disabled";
+            const statusText =
+                rule.is_enabled
+                    ? "Enabled"
+                    : "Disabled";
 
 
-        return `
-            <article class="rule-card">
+            return `
+                <article class="rule-card">
 
-                <div class="rule-card-header">
+                    <div class="rule-card-header">
 
-                    <div>
+                        <div class="rule-card-main">
 
-                        <div class="rule-type">
-                            ${escapeHtml(rule.rule_type)}
+                            <div class="rule-type">
+                                ${escapeHtml(
+                                    rule.rule_type || "Rule"
+                                )}
+                            </div>
+
+                            <div class="rule-condition">
+                                ${escapeHtml(
+                                    rule.operator || ""
+                                )}
+                                ${escapeHtml(
+                                    rule.target_value || ""
+                                )}
+                            </div>
+
                         </div>
 
-                        <div class="rule-condition">
-                            ${escapeHtml(rule.operator)}
-                            ${escapeHtml(rule.target_value)}
+                        <div
+                            class="
+                                rule-status
+                                ${rule.is_enabled
+                                    ? "rule-status-enabled"
+                                    : "rule-status-disabled"}
+                            "
+                        >
+                            ${statusText}
                         </div>
 
                     </div>
 
-                    <div class="rule-status">
-                        ${statusText}
-                    </div>
+                </article>
+            `;
 
-                </div>
+        }).join("");
 
-            </article>
-        `;
-
-    }).join("");
 }
 
+
+/* ============================================================
+   HTML ESCAPING
+   ============================================================ */
 
 function escapeHtml(value) {
 
-    const div = document.createElement("div");
+    if (
+        value === null ||
+        value === undefined
+    ) {
 
-    div.textContent = value;
+        return "";
+
+    }
+
+
+    const div =
+        document.createElement("div");
+
+
+    div.textContent =
+        String(value);
+
 
     return div.innerHTML;
-}
-
-
-function showCreateRule() {
-
-    window.location.href = `create-rule.html?task_id=${taskId}`;
 
 }
 
 
-loadTask();
-loadRules();
+/* ============================================================
+   EVENT WIRING
+   ============================================================ */
+
+function initializeTaskPage() {
+
+    const backButton =
+        document.getElementById(
+            "back-dashboard-button"
+        );
+
+
+    const addRuleButton =
+        document.getElementById(
+            "add-rule-button"
+        );
+
+
+    if (backButton) {
+
+        backButton.addEventListener(
+            "click",
+            goBack
+        );
+
+    }
+
+
+    if (addRuleButton) {
+
+        addRuleButton.addEventListener(
+            "click",
+            showCreateRule
+        );
+
+    }
+
+
+    loadTask();
+
+    loadRules();
+
+}
+
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+
+if (document.readyState === "loading") {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        initializeTaskPage
+    );
+
+} else {
+
+    initializeTaskPage();
+
+}

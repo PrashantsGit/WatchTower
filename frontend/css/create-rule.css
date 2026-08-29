@@ -1,0 +1,535 @@
+/* ============================================================
+   WATCHTOWER — CREATE MONITORING RULE
+
+   Page-specific presentation styles.
+   Shared shell styles live in app-shell.css.
+   ============================================================ */
+
+
+/* ============================================================
+   PAGE CONTAINER
+   ============================================================ */
+
+.create-rule-container {
+
+    width: 100%;
+    max-width: 900px;
+
+}
+
+
+/* ============================================================
+   BACK LINK
+   ============================================================ */
+
+.create-rule-back {
+
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    margin-bottom: 26px;
+
+    color: var(--wt-text-secondary);
+
+    font-size: var(--wt-text-sm);
+    font-weight: 500;
+
+    text-decoration: none;
+
+    transition:
+        color var(--wt-transition-fast),
+        transform var(--wt-transition-fast);
+
+}
+
+.create-rule-back:hover {
+
+    color: var(--wt-gold);
+
+    transform: translateX(-2px);
+
+}
+
+
+/* ============================================================
+   PAGE INTRO
+   ============================================================ */
+
+.create-rule-intro {
+
+    margin-bottom: 26px;
+
+}
+
+.create-rule-eyebrow {
+
+    margin-bottom: 9px;
+
+    color: var(--wt-gold);
+
+    font-size: var(--wt-text-xs);
+    font-weight: 700;
+
+    letter-spacing: 0.14em;
+
+}
+
+.create-rule-intro h1 {
+
+    margin: 0;
+
+    color: var(--wt-text);
+
+    font-size: clamp(26px, 3vw, 32px);
+
+    font-weight: 700;
+
+    letter-spacing: -0.025em;
+
+}
+
+.create-rule-intro p {
+
+    margin: 7px 0 0;
+
+    color: var(--wt-text-secondary);
+
+    font-size: var(--wt-text-sm);
+
+}
+
+
+/* ============================================================
+   FORM PANEL
+   ============================================================ */
+
+.create-rule-panel {
+
+    padding: 28px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(15, 19, 30, 0.98),
+            rgba(10, 13, 22, 0.98)
+        );
+
+    border: 1px solid var(--wt-border);
+
+    border-radius: var(--wt-radius-lg);
+
+    box-shadow:
+        0 16px 40px rgba(0, 0, 0, 0.18);
+
+}
+
+
+/* ============================================================
+   FORM GROUP
+   ============================================================ */
+
+.rule-form-group {
+
+    margin-bottom: 24px;
+
+}
+
+.rule-form-group:last-of-type {
+
+    margin-bottom: 0;
+
+}
+
+.rule-form-group label {
+
+    display: block;
+
+    margin-bottom: 9px;
+
+    color: var(--wt-text);
+
+    font-size: var(--wt-text-sm);
+
+    font-weight: 600;
+
+}
+
+
+/* ============================================================
+   FORM CONTROLS
+   ============================================================ */
+
+.rule-form-group input,
+.rule-form-group select {
+
+    width: 100%;
+
+    min-height: 46px;
+
+    padding:
+        0
+        14px;
+
+    background: var(--wt-bg);
+
+    border: 1px solid var(--wt-border);
+
+    border-radius: var(--wt-radius-sm);
+
+    color: var(--wt-text);
+
+    font-family: inherit;
+
+    font-size: var(--wt-text-sm);
+
+    outline: none;
+
+    transition:
+        border-color var(--wt-transition-fast),
+        box-shadow var(--wt-transition-fast),
+        background var(--wt-transition-fast);
+
+}
+
+.rule-form-group input::placeholder {
+
+    color: var(--wt-text-muted);
+
+}
+
+.rule-form-group select {
+
+    cursor: pointer;
+
+}
+
+.rule-form-group select option {
+
+    background: var(--wt-bg);
+
+    color: var(--wt-text);
+
+}
+
+
+/* Focus */
+
+.rule-form-group input:focus,
+.rule-form-group select:focus {
+
+    border-color: var(--wt-gold-dark);
+
+    box-shadow:
+        0 0 0 3px rgba(242, 204, 113, 0.07);
+
+}
+
+
+/* ============================================================
+   FORM HELP TEXT
+   ============================================================ */
+
+.rule-form-group small {
+
+    display: block;
+
+    margin-top: 8px;
+
+    color: var(--wt-text-muted);
+
+    font-size: var(--wt-text-xs);
+
+    line-height: 1.5;
+
+}
+
+
+/* ============================================================
+   ERROR MESSAGE
+   ============================================================ */
+
+.rule-form-error {
+
+    display: none;
+
+    margin-top: 22px;
+
+    padding: 12px 14px;
+
+    background: rgba(127, 29, 29, 0.14);
+
+    border: 1px solid rgba(248, 113, 113, 0.24);
+
+    border-radius: var(--wt-radius-sm);
+
+    color: #f87171;
+
+    font-size: var(--wt-text-xs);
+
+    line-height: 1.5;
+
+}
+
+
+/* ============================================================
+   FORM ACTIONS
+   ============================================================ */
+
+.rule-form-actions {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 28px;
+    padding-top: 22px;
+
+    border-top: 1px solid var(--wt-border-subtle);
+
+}
+
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.rule-form-actions .primary-button,
+.rule-form-actions .secondary-button {
+
+    min-height: 42px;
+
+    padding:
+        0
+        17px;
+
+    border-radius: var(--wt-radius-sm);
+
+    font-family: inherit;
+
+    font-size: var(--wt-text-sm);
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background var(--wt-transition-fast),
+        border-color var(--wt-transition-fast),
+        color var(--wt-transition-fast),
+        transform var(--wt-transition-fast);
+
+}
+
+
+/* Primary */
+
+.rule-form-actions .primary-button {
+
+    background: var(--wt-gold);
+
+    border: 1px solid var(--wt-gold);
+
+    color: #17130a;
+
+}
+
+.rule-form-actions .primary-button:hover {
+
+    background: #f5d47e;
+
+    border-color: #f5d47e;
+
+}
+
+.rule-form-actions .primary-button:active {
+
+    transform: translateY(1px);
+
+}
+
+.rule-form-actions .primary-button:disabled {
+
+    opacity: 0.55;
+
+    cursor: not-allowed;
+
+}
+
+
+/* Secondary */
+
+.rule-form-actions .secondary-button {
+
+    background: transparent;
+
+    border: 1px solid var(--wt-border);
+
+    color: var(--wt-text-secondary);
+
+}
+
+.rule-form-actions .secondary-button:hover {
+
+    background: var(--wt-surface);
+
+    border-color: var(--wt-border);
+
+    color: var(--wt-text);
+
+}
+
+
+/* ============================================================
+   HELP PANEL
+   ============================================================ */
+
+.rule-help {
+
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 14px;
+
+    margin-top: 18px;
+
+    padding: 18px;
+
+    background: rgba(127, 138, 163, 0.035);
+
+    border: 1px solid var(--wt-border-subtle);
+
+    border-radius: var(--wt-radius-md);
+
+}
+
+.rule-help-icon {
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 30px;
+    height: 30px;
+
+    flex-shrink: 0;
+
+    border: 1px solid var(--wt-border);
+
+    border-radius: 50%;
+
+    color: var(--wt-text-muted);
+
+    font-size: 12px;
+    font-weight: 700;
+
+}
+
+.rule-help h2 {
+
+    margin: 1px 0 0;
+
+    color: var(--wt-text-secondary);
+
+    font-size: var(--wt-text-sm);
+
+    font-weight: 600;
+
+}
+
+.rule-help p {
+
+    margin: 5px 0 0;
+
+    color: var(--wt-text-muted);
+
+    font-size: var(--wt-text-xs);
+
+    line-height: 1.6;
+
+}
+
+
+/* ============================================================
+   RESPONSIVE — TABLET
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+    .create-rule-panel {
+
+        padding: 24px;
+
+    }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE — MOBILE
+   ============================================================ */
+
+@media (max-width: 600px) {
+
+    .create-rule-intro {
+
+        margin-bottom: 20px;
+
+    }
+
+    .create-rule-panel {
+
+        padding: 19px;
+
+        border-radius: var(--wt-radius-md);
+
+    }
+
+    .rule-form-actions {
+
+        flex-direction: column-reverse;
+
+        align-items: stretch;
+
+    }
+
+    .rule-form-actions .primary-button,
+    .rule-form-actions .secondary-button {
+
+        width: 100%;
+
+    }
+
+    .rule-help {
+
+        padding: 15px;
+
+    }
+
+}
+
+
+/* ============================================================
+   VERY SMALL SCREENS
+   ============================================================ */
+
+@media (max-width: 400px) {
+
+    .create-rule-panel {
+
+        padding: 16px;
+
+    }
+
+    .create-rule-intro h1 {
+
+        font-size: 24px;
+
+    }
+
+}

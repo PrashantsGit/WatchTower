@@ -1,0 +1,535 @@
+/* ============================================================
+   WATCHTOWER — TASK DETAILS
+
+   Task Details page-specific presentation styles.
+   Shared application styles belong in:
+   - design-system.css
+   - app-shell.css
+
+   ============================================================ */
+
+
+/* ============================================================
+   PAGE INTRO
+   ============================================================ */
+
+.task-page-intro {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 28px;
+}
+
+.task-page-intro h1 {
+    margin: 12px 0 0;
+    color: #f2f3f7;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.task-page-intro p {
+    margin: 6px 0 0;
+    color: #7f8aa3;
+    font-size: 14px;
+}
+
+
+/* ============================================================
+   BACK LINK
+   ============================================================ */
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    color: #8f9ab0;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+
+    transition:
+        color 0.18s ease,
+        transform 0.18s ease;
+}
+
+.back-link:hover {
+    color: #f2cc71;
+}
+
+.back-link span {
+    font-size: 15px;
+    line-height: 1;
+}
+
+.back-link:hover span {
+    transform: translateX(-2px);
+}
+
+
+/* ============================================================
+   GENERIC TASK PANEL
+   ============================================================ */
+
+.task-details-panel {
+    margin-bottom: 20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(15, 19, 30, 0.98),
+            rgba(10, 13, 22, 0.98)
+        );
+
+    border: 1px solid #252b3a;
+    border-radius: 12px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.14);
+
+    overflow: hidden;
+}
+
+
+/* ============================================================
+   TASK INFORMATION GRID
+   ============================================================ */
+
+.task-information {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+
+    padding: 6px 22px 10px;
+}
+
+.task-information-item {
+    min-width: 0;
+    padding: 18px 20px 18px 0;
+}
+
+.task-information-item:nth-child(3n + 2),
+.task-information-item:nth-child(3n + 3) {
+    padding-left: 20px;
+}
+
+.task-information-item:nth-child(-n + 3) {
+    border-bottom: 1px solid #202635;
+}
+
+.task-information-item:nth-child(3n + 1) {
+    border-right: 1px solid #202635;
+}
+
+.task-information-item:nth-child(3n + 2) {
+    border-right: 1px solid #202635;
+}
+
+.information-label {
+    display: block;
+
+    color: #707c93;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.information-value {
+    display: block;
+
+    margin-top: 8px;
+
+    color: #e4e7ee;
+    font-size: 13px;
+    font-weight: 600;
+
+    line-height: 1.5;
+}
+
+
+/* ============================================================
+   TARGET URL
+   ============================================================ */
+
+.information-link {
+    max-width: 100%;
+
+    color: #aeb8ca;
+    text-decoration: none;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    transition: color 0.18s ease;
+}
+
+.information-link:hover {
+    color: #f2cc71;
+}
+
+
+/* ============================================================
+   TASK STATUS
+   ============================================================ */
+
+.task-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    margin-top: 7px;
+    padding: 5px 9px;
+
+    color: #69c980;
+    background: rgba(99, 199, 122, 0.08);
+
+    border: 1px solid rgba(99, 199, 122, 0.18);
+    border-radius: 6px;
+
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.task-status::before {
+    content: "";
+
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+
+    background: #63c77a;
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 0 3px rgba(99, 199, 122, 0.08);
+}
+
+
+/*
+   Status variations.
+
+   These work if task.js adds one of these classes later.
+*/
+
+.task-status.paused {
+    color: #d4b66b;
+    background: rgba(242, 204, 113, 0.07);
+    border-color: rgba(242, 204, 113, 0.18);
+}
+
+.task-status.paused::before {
+    background: #d4b66b;
+    box-shadow:
+        0 0 0 3px rgba(242, 204, 113, 0.08);
+}
+
+.task-status.inactive,
+.task-status.disabled {
+    color: #8d98ae;
+    background: rgba(127, 138, 163, 0.07);
+    border-color: rgba(127, 138, 163, 0.15);
+}
+
+.task-status.inactive::before,
+.task-status.disabled::before {
+    background: #7f8aa3;
+    box-shadow:
+        0 0 0 3px rgba(127, 138, 163, 0.07);
+}
+
+.task-status.error,
+.task-status.failed {
+    color: #d98b8b;
+    background: rgba(190, 91, 91, 0.08);
+    border-color: rgba(190, 91, 91, 0.18);
+}
+
+.task-status.error::before,
+.task-status.failed::before {
+    background: #c96d6d;
+    box-shadow:
+        0 0 0 3px rgba(201, 109, 109, 0.08);
+}
+
+
+/* ============================================================
+   RULES PANEL
+   ============================================================ */
+
+.rules-panel {
+    margin-bottom: 0;
+}
+
+.rules-container {
+    min-height: 150px;
+}
+
+
+/* ============================================================
+   LOADING / EMPTY / ERROR STATES
+   ============================================================ */
+
+.loading-message,
+.empty-message,
+.error-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 130px;
+    padding: 30px 22px;
+
+    color: #707c93;
+    font-size: 13px;
+    text-align: center;
+}
+
+.error-message {
+    color: #c98b8b;
+}
+
+
+/* ============================================================
+   MONITORING RULE CARDS
+
+   These styles intentionally support the existing rule
+   rendering without requiring changes to task.js.
+   ============================================================ */
+
+.rule-card {
+    margin: 14px 16px;
+    padding: 17px 18px;
+
+    background: rgba(21, 26, 38, 0.72);
+
+    border: 1px solid #252d3d;
+    border-radius: 9px;
+
+    transition:
+        border-color 0.18s ease,
+        background 0.18s ease,
+        transform 0.18s ease;
+}
+
+.rule-card:hover {
+    background: rgba(25, 31, 44, 0.92);
+    border-color: rgba(242, 204, 113, 0.25);
+
+    transform: translateY(-1px);
+}
+
+
+/* ============================================================
+   COMMON RULE CONTENT
+
+   Supports a range of existing/generated markup.
+   ============================================================ */
+
+.rule-card h3,
+.rule-card h4 {
+    margin: 0;
+
+    color: #e5e8ef;
+    font-size: 14px;
+    font-weight: 650;
+}
+
+.rule-card p {
+    margin: 6px 0 0;
+
+    color: #7c879d;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.rule-label {
+    color: #707c93;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.rule-value {
+    margin-top: 5px;
+
+    color: #dce1ea;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+/* ============================================================
+   RULE TYPE / CONDITION BADGES
+   ============================================================ */
+
+.rule-type,
+.rule-condition {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 4px 8px;
+
+    color: #aeb8ca;
+    background: rgba(127, 138, 163, 0.07);
+
+    border: 1px solid #292f3d;
+    border-radius: 5px;
+
+    font-size: 10px;
+    font-weight: 650;
+}
+
+
+/* ============================================================
+   RULE STATUS
+   ============================================================ */
+
+.rule-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    color: #69c980;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.rule-status::before {
+    content: "";
+
+    width: 6px;
+    height: 6px;
+
+    background: #63c77a;
+    border-radius: 50%;
+}
+
+
+/* ============================================================
+   ADD RULE ACTION
+   ============================================================ */
+
+#add-rule-button {
+    border: 1px solid rgba(242, 204, 113, 0.28);
+}
+
+#add-rule-button:hover {
+    background: rgba(242, 204, 113, 0.12);
+    border-color: rgba(242, 204, 113, 0.45);
+}
+
+
+/* ============================================================
+   RESPONSIVE — TABLET
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+    .task-information {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .task-information-item:nth-child(3n + 1),
+    .task-information-item:nth-child(3n + 2) {
+        border-right: none;
+    }
+
+    .task-information-item {
+        border-bottom: 1px solid #202635;
+    }
+
+    .task-information-item:nth-child(odd) {
+        padding-left: 0;
+        padding-right: 20px;
+        border-right: 1px solid #202635;
+    }
+
+    .task-information-item:nth-child(even) {
+        padding-left: 20px;
+        padding-right: 0;
+    }
+
+    .task-information-item:last-child,
+    .task-information-item:nth-last-child(2) {
+        border-bottom: none;
+    }
+}
+
+
+/* ============================================================
+   RESPONSIVE — MOBILE
+   ============================================================ */
+
+@media (max-width: 720px) {
+
+    .task-page-intro {
+        margin-bottom: 22px;
+    }
+
+    .task-page-intro h1 {
+        font-size: 24px;
+    }
+
+    .task-information {
+        grid-template-columns: 1fr;
+        padding: 4px 17px 8px;
+    }
+
+    .task-information-item,
+    .task-information-item:nth-child(odd),
+    .task-information-item:nth-child(even) {
+        padding: 15px 0;
+        border-right: none;
+        border-bottom: 1px solid #202635;
+    }
+
+    .task-information-item:last-child {
+        border-bottom: none;
+    }
+
+    .rule-card {
+        margin: 12px;
+        padding: 15px;
+    }
+}
+
+
+/* ============================================================
+   RESPONSIVE — VERY SMALL SCREENS
+   ============================================================ */
+
+@media (max-width: 480px) {
+
+    .task-page-intro h1 {
+        font-size: 22px;
+    }
+
+    .task-page-intro p {
+        font-size: 13px;
+    }
+
+    .task-details-panel {
+        border-radius: 10px;
+    }
+
+    .information-value {
+        font-size: 12px;
+    }
+
+    .information-link {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .panel-header {
+        gap: 12px;
+    }
+
+    .panel-action {
+        align-self: flex-start;
+    }
+}

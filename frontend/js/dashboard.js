@@ -1,72 +1,248 @@
-const API_BASE_URL = "http://127.0.0.1:8000/api";
+/* ============================================================
+   WATCHTOWER — DASHBOARD
+   ============================================================ */
 
-const token = localStorage.getItem("access_token");
+
+/* ============================================================
+   CONFIGURATION
+   ============================================================ */
+
+const API_BASE_URL =
+    "http://127.0.0.1:8000/api";
+
+const ACCESS_TOKEN_KEY =
+    "access_token";
+
+
+/* ============================================================
+   SESSION
+   ============================================================ */
+
+const token =
+    localStorage.getItem(ACCESS_TOKEN_KEY);
+
 
 if (!token) {
-    window.location.href = "../index.html";
+
+    window.location.href =
+        "login.html";
+
 }
 
+
+/* ============================================================
+   DASHBOARD INITIALIZATION
+   ============================================================ */
+
+async function initializeDashboard() {
+
+    /*
+     * Wait until the shared WatchTower shell has finished
+     * loading before accessing header/sidebar elements.
+     */
+
+    if (window.watchTowerComponentsReady) {
+
+        await window.watchTowerComponentsReady;
+
+    }
+
+
+    setupDashboardActions();
+
+    await loadDashboard();
+
+}
+
+
+/* ============================================================
+   DASHBOARD DATA
+   ============================================================ */
 
 async function loadDashboard() {
 
+    const container =
+        document.getElementById("tasks-container");
+
+
     try {
-        const response = await fetch(`${API_BASE_URL}/tasks`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-            },
-        });
+
+        const response =
+            await fetch(
+                `${API_BASE_URL}/tasks`,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        /* -----------------------------------------------
+           Session expired / invalid
+           ----------------------------------------------- */
 
         if (response.status === 401) {
-            localStorage.removeItem("access_token");
-            window.location.href = "../index.html";
+
+            localStorage.removeItem(
+                ACCESS_TOKEN_KEY
+            );
+
+            window.location.href =
+                "login.html";
+
             return;
         }
 
+
+        /* -----------------------------------------------
+           Other API failure
+           ----------------------------------------------- */
+
         if (!response.ok) {
-            throw new Error("Failed to load monitoring tasks.");
+
+            throw new Error(
+                "Failed to load monitoring tasks."
+            );
+
         }
 
-        const tasks = await response.json();
+
+        const tasks =
+            await response.json();
+
+
+        /* -----------------------------------------------
+           Render dashboard
+           ----------------------------------------------- */
 
         renderStatistics(tasks);
+
         renderTasks(tasks);
 
-        loadCurrentUser();
+
+        /* -----------------------------------------------
+           User information
+           ----------------------------------------------- */
+
+        await loadCurrentUser();
+
 
     } catch (error) {
-        console.error("Dashboard error:", error);
 
-        document.getElementById("tasks-container").innerHTML = `
-            <div class="error-message-dashboard">
-                Unable to load monitoring tasks.
-            </div>
-        `;
+        console.error(
+            "WatchTower dashboard error:",
+            error
+        );
+
+
+        if (container) {
+
+            container.innerHTML = `
+                <div class="error-message-dashboard">
+                    Unable to load monitoring tasks.
+                </div>
+            `;
+
+        }
+
     }
+
 }
 
+
+/* ============================================================
+   STATISTICS
+   ============================================================ */
 
 function renderStatistics(tasks) {
 
-    const totalTasks = tasks.length;
+    const totalTasks =
+        tasks.length;
 
-    const activeTasks = tasks.filter(
-        task => task.is_active
-    ).length;
 
-    const pausedTasks = totalTasks - activeTasks;
+    const activeTasks =
+        tasks.filter(
+            task => task.is_active
+        ).length;
 
-    document.getElementById("total-tasks").textContent = totalTasks;
-    document.getElementById("active-tasks").textContent = activeTasks;
-    document.getElementById("paused-tasks").textContent = pausedTasks;
+
+    const pausedTasks =
+        totalTasks - activeTasks;
+
+
+    const totalElement =
+        document.getElementById(
+            "total-tasks"
+        );
+
+
+    const activeElement =
+        document.getElementById(
+            "active-tasks"
+        );
+
+
+    const pausedElement =
+        document.getElementById(
+            "paused-tasks"
+        );
+
+
+    if (totalElement) {
+
+        totalElement.textContent =
+            totalTasks;
+
+    }
+
+
+    if (activeElement) {
+
+        activeElement.textContent =
+            activeTasks;
+
+    }
+
+
+    if (pausedElement) {
+
+        pausedElement.textContent =
+            pausedTasks;
+
+    }
+
 }
 
 
+/* ============================================================
+   TASKS
+   ============================================================ */
+
 function renderTasks(tasks) {
 
-    const container = document.getElementById("tasks-container");
+    const container =
+        document.getElementById(
+            "tasks-container"
+        );
+
+
+    if (!container) {
+
+        console.error(
+            "WatchTower: tasks-container not found."
+        );
+
+        return;
+
+    }
+
 
     if (tasks.length === 0) {
+
         container.innerHTML = `
             <div class="empty-message">
                 No monitoring tasks yet.
@@ -75,135 +251,302 @@ function renderTasks(tasks) {
         `;
 
         return;
+
     }
 
-    container.innerHTML = tasks.map(task => {
 
-        const statusClass = task.is_active ? "" : "paused";
-        const statusText = task.is_active ? "Active" : "Paused";
+    container.innerHTML =
+        tasks.map(task => {
 
-        return `
-            <article class="task-card">
+            const statusClass =
+                task.is_active
+                    ? ""
+                    : "paused";
 
-                <div class="task-card-header">
 
-                    <div>
-                        <div class="task-name">
-                            ${escapeHtml(task.name)}
+            const statusText =
+                task.is_active
+                    ? "Active"
+                    : "Paused";
+
+
+            return `
+                <article class="task-card">
+
+                    <div class="task-card-header">
+
+                        <div>
+
+                            <div class="task-name">
+                                ${escapeHtml(task.name)}
+                            </div>
+
+                            <div class="task-url">
+                                ${escapeHtml(task.target_url)}
+                            </div>
+
                         </div>
 
-                        <div class="task-url">
-                            ${escapeHtml(task.target_url)}
+
+                        <div
+                            class="task-status ${statusClass}"
+                        >
+
+                            <span
+                                class="status-dot"
+                            ></span>
+
+                            ${statusText}
+
                         </div>
+
                     </div>
 
-                    <div class="task-status ${statusClass}">
-                        <span class="status-dot"></span>
-                        ${statusText}
+
+                    <div class="task-details">
+
+                        <span>
+                            Check every
+                            ${escapeHtml(
+                                String(
+                                    task.check_interval
+                                )
+                            )}
+                            minute(s)
+                        </span>
+
+
+                        <span>
+                            ${formatLastChecked(
+                                task.last_checked_at
+                            )}
+                        </span>
+
                     </div>
 
-                </div>
 
-                <div class="task-details">
+                    <div class="task-actions">
 
-                    <span>
-                        Check every ${task.check_interval} minute(s)
-                    </span>
+                        <button
+                            type="button"
+                            class="view-task-button"
+                            data-task-id="${task.id}"
+                        >
+                            View Details
+                        </button>
 
-                    <span>
-                        ${formatLastChecked(task.last_checked_at)}
-                    </span>
+                    </div>
 
-                </div>
+                </article>
+            `;
 
-                <div class="task-actions">
+        }).join("");
 
-                    <button
-                        class="view-task-button"
-                        onclick="openTask(${task.id})"
-                    >
-                        View Details
-                    </button>
 
-                </div>
+    /*
+     * Attach actions after the cards exist.
+     */
 
-            </article>
-        `;
+    container
+        .querySelectorAll(
+            ".view-task-button"
+        )
+        .forEach(button => {
 
-    }).join("");
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const taskId =
+                        button.dataset.taskId;
+
+                    openTask(taskId);
+
+                }
+            );
+
+        });
+
 }
 
+
+/* ============================================================
+   LAST CHECKED
+   ============================================================ */
 
 function formatLastChecked(value) {
 
     if (!value) {
+
         return "Not checked yet";
+
     }
 
-    const date = new Date(value);
+
+    const date =
+        new Date(value);
+
 
     return `Last checked: ${date.toLocaleString()}`;
+
 }
 
+
+/* ============================================================
+   HTML ESCAPING
+   ============================================================ */
 
 function escapeHtml(value) {
 
-    const div = document.createElement("div");
-    div.textContent = value;
+    const div =
+        document.createElement("div");
+
+
+    div.textContent =
+        value;
+
 
     return div.innerHTML;
+
 }
 
+
+/* ============================================================
+   TASK NAVIGATION
+   ============================================================ */
 
 function openTask(taskId) {
 
-    window.location.href = `task.html?id=${taskId}`;
+    window.location.href =
+        `task.html?id=${taskId}`;
+
 }
 
+
+/* ============================================================
+   CURRENT USER
+   ============================================================ */
 
 async function loadCurrentUser() {
 
     try {
 
-        const response = await fetch(`${API_BASE_URL}/auth/me`, {
-            headers: {
-                "Authorization": `Bearer ${token}`,
-            },
-        });
+        const response =
+            await fetch(
+                `${API_BASE_URL}/auth/me`,
+                {
+                    method: "GET",
+
+                    headers: {
+                        "Authorization":
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
 
         if (!response.ok) {
+
             return;
+
         }
 
-        const user = await response.json();
 
-        document.getElementById("user-name").textContent =
-            user.full_name;
+        const user =
+            await response.json();
+
+
+        const userName =
+            document.getElementById(
+                "user-name"
+            );
+
+
+        if (userName) {
+
+            userName.textContent =
+                user.full_name;
+
+        }
+
 
     } catch (error) {
 
-        console.error("Unable to load user profile:", error);
+        console.error(
+            "Unable to load user profile:",
+            error
+        );
 
     }
+
 }
 
 
-document
-    .getElementById("logout-button")
-    .addEventListener("click", () => {
+/* ============================================================
+   DASHBOARD ACTIONS
+   ============================================================ */
 
-        localStorage.removeItem("access_token");
+function setupDashboardActions() {
 
-        window.location.href = "../index.html";
-    });
+    /* -----------------------------------------------
+       Logout
+       ----------------------------------------------- */
 
-
-document
-    .getElementById("add-task-button")
-    .addEventListener("click", () => {
-
-        window.location.href = "create-task.html";
-    });
+    const logoutButton =
+        document.getElementById(
+            "logout-button"
+        );
 
 
-loadDashboard();
+    if (logoutButton) {
+
+        logoutButton.addEventListener(
+            "click",
+            () => {
+
+                localStorage.removeItem(
+                    ACCESS_TOKEN_KEY
+                );
+
+
+                window.location.href =
+                    "login.html";
+
+            }
+        );
+
+    }
+
+
+    /* -----------------------------------------------
+       Add monitor
+       ----------------------------------------------- */
+
+    const addTaskButton =
+        document.getElementById(
+            "add-task-button"
+        );
+
+
+    if (addTaskButton) {
+
+        addTaskButton.addEventListener(
+            "click",
+            () => {
+
+                window.location.href =
+                    "create-task.html";
+
+            }
+        );
+
+    }
+
+}
+
+
+/* ============================================================
+   START
+   ============================================================ */
+
+initializeDashboard();

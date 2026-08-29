@@ -1,125 +1,416 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>WatchTower — Dashboard</title>
 
-    <link rel="stylesheet" href="../css/style.css">
+
+    <!-- ========================================================
+         WATCHTOWER STYLES
+         ======================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="../css/design-system.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/app-shell.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/dashboard.css"
+    >
+
 </head>
 
-<body>
 
-    <div class="dashboard-layout">
-
-        <!-- Sidebar -->
-        <aside class="sidebar">
-
-            <div class="sidebar-brand">
-                <h1>WATCHTOWER</h1>
-                <p>Monitor. Detect. Notify.</p>
-            </div>
-
-            <nav class="sidebar-nav">
-
-                <a href="#" class="nav-item active">
-                    Dashboard
-                </a>
-
-                <a href="#" class="nav-item">
-                    Tasks
-                </a>
-
-                <a href="#" class="nav-item disabled">
-                    History
-                </a>
-
-                <a href="#" class="nav-item disabled">
-                    Settings
-                </a>
-
-            </nav>
-
-        </aside>
+<body data-page="dashboard">
 
 
-        <!-- Main Content -->
-        <main class="dashboard-main">
+    <!-- ========================================================
+         APPLICATION SHELL
+         Shared components are loaded by components.js.
+         ======================================================== -->
 
-            <!-- Top bar -->
-            <header class="topbar">
+    <div class="app-shell">
 
-                <div>
-                    <h2>Monitoring Dashboard</h2>
-                    <p>Keep an eye on what matters.</p>
+
+        <!-- Shared sidebar -->
+
+        <div id="app-sidebar"></div>
+
+
+        <!-- Main application area -->
+
+        <div class="app-main">
+
+
+            <!-- Shared header -->
+
+            <div id="app-header"></div>
+
+
+            <!-- =================================================
+                 DASHBOARD CONTENT
+                 ================================================= -->
+
+            <main class="page-content">
+
+                <div class="content-container">
+
+
+                    <!-- =========================================
+                         DASHBOARD INTRO
+                         ========================================= -->
+
+                    <section class="dashboard-intro">
+
+                        <div>
+
+                            <h1>
+                                Dashboard
+                            </h1>
+
+                            <p>
+                                Keep an eye on what matters.
+                            </p>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- =========================================
+                         OVERVIEW METRICS
+                         ========================================= -->
+
+                    <section
+                        class="dashboard-metrics"
+                        aria-label="Monitoring overview"
+                    >
+
+                        <article class="metric-card">
+
+                            <div class="metric-label">
+                                Total Tasks
+                            </div>
+
+                            <div
+                                id="total-tasks"
+                                class="metric-value"
+                            >
+                                0
+                            </div>
+
+                            <div class="metric-context">
+                                Monitoring configurations
+                            </div>
+
+                        </article>
+
+
+                        <article class="metric-card">
+
+                            <div class="metric-label">
+                                Active
+                            </div>
+
+                            <div
+                                id="active-tasks"
+                                class="metric-value"
+                            >
+                                0
+                            </div>
+
+                            <div class="metric-context">
+                                Currently monitoring
+                            </div>
+
+                        </article>
+
+
+                        <article class="metric-card">
+
+                            <div class="metric-label">
+                                Paused
+                            </div>
+
+                            <div
+                                id="paused-tasks"
+                                class="metric-value"
+                            >
+                                0
+                            </div>
+
+                            <div class="metric-context">
+                                Monitoring paused
+                            </div>
+
+                        </article>
+
+                    </section>
+
+
+                    <!-- =========================================
+                         MAIN DASHBOARD GRID
+                         ========================================= -->
+
+                    <section class="dashboard-main-grid">
+
+
+                        <!-- =====================================
+                             YOUR MONITORS
+                             ===================================== -->
+
+                        <section class="dashboard-panel monitors-panel">
+
+                            <div class="panel-header">
+
+                                <div>
+
+                                    <h2 class="panel-title">
+                                        Your Monitors
+                                    </h2>
+
+                                    <p class="panel-description">
+                                        Tasks currently configured in WatchTower.
+                                    </p>
+
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    id="add-task-button"
+                                    class="panel-action"
+                                >
+                                    + Add Monitor
+                                </button>
+
+                            </div>
+
+
+                            <div
+                                id="tasks-container"
+                                class="tasks-container"
+                            >
+
+                                <div class="loading-message">
+                                    Loading monitoring tasks...
+                                </div>
+
+                            </div>
+
+
+                            <div class="panel-footer">
+
+                                <a
+                                    href="tasks.html"
+                                    class="panel-link"
+                                >
+                                    View all monitors
+
+                                    <span aria-hidden="true">
+                                        →
+                                    </span>
+
+                                </a>
+
+                            </div>
+
+                        </section>
+
+
+                        <!-- =====================================
+                             SYSTEM STATUS
+                             ===================================== -->
+
+                        <aside
+                            class="dashboard-panel system-panel"
+                            aria-label="System status"
+                        >
+
+                            <div class="panel-header">
+
+                                <div>
+
+                                    <h2 class="panel-title">
+                                        System Status
+                                    </h2>
+
+                                    <p class="panel-description">
+                                        WatchTower monitoring state.
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="system-status-block">
+
+                                <div class="system-status-indicator">
+
+                                    <span
+                                        class="status-indicator"
+                                        aria-hidden="true"
+                                    ></span>
+
+                                    <div>
+
+                                        <div class="system-status-title">
+                                            Monitoring Engine
+                                        </div>
+
+                                        <div class="system-status-value">
+                                            Operational
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="system-summary">
+
+                                <div class="summary-row">
+
+                                    <span>
+                                        Recent Events
+                                    </span>
+
+                                    <strong>
+                                        —
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="summary-row">
+
+                                    <span>
+                                        Notifications
+                                    </span>
+
+                                    <strong>
+                                        —
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </aside>
+
+                    </section>
+
+
+                    <!-- =========================================
+                         RECENT ACTIVITY
+                         ========================================= -->
+
+                    <section class="dashboard-panel activity-panel">
+
+                        <div class="panel-header">
+
+                            <div>
+
+                                <h2 class="panel-title">
+                                    Recent Activity
+                                </h2>
+
+                                <p class="panel-description">
+                                    Recent monitoring events.
+                                </p>
+
+                            </div>
+
+
+                            <a
+                                href="history.html"
+                                class="panel-link"
+                            >
+                                View history
+
+                                <span aria-hidden="true">
+                                    →
+                                </span>
+
+                            </a>
+
+                        </div>
+
+
+                        <div class="activity-empty">
+
+                            <div
+                                class="activity-placeholder-icon"
+                                aria-hidden="true"
+                            >
+                                ◌
+                            </div>
+
+
+                            <div>
+
+                                <div class="activity-empty-title">
+                                    No recent activity
+                                </div>
+
+                                <div class="activity-empty-description">
+                                    Monitoring events will appear here.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+
                 </div>
 
-                <div class="topbar-user">
-                    <span id="user-name">User</span>
-
-                    <button id="logout-button" class="logout-button">
-                        Logout
-                    </button>
-                </div>
-
-            </header>
+            </main>
 
 
-            <!-- Statistics -->
-            <section class="stats-grid">
+            <!-- Shared footer -->
 
-                <div class="stat-card">
-                    <span class="stat-label">Total Tasks</span>
-                    <strong id="total-tasks">0</strong>
-                </div>
-
-                <div class="stat-card">
-                    <span class="stat-label">Active</span>
-                    <strong id="active-tasks">0</strong>
-                </div>
-
-                <div class="stat-card">
-                    <span class="stat-label">Paused</span>
-                    <strong id="paused-tasks">0</strong>
-                </div>
-
-            </section>
+            <div id="app-footer"></div>
 
 
-            <!-- Tasks -->
-            <section class="tasks-section">
-
-                <div class="section-header">
-
-                    <div>
-                        <h3>Your Monitoring Tasks</h3>
-                        <p>Tasks currently configured in WatchTower.</p>
-                    </div>
-
-                    <button id="add-task-button" class="primary-button add-task-button">
-                        + Add Task
-                    </button>
-
-                </div>
-
-
-                <div id="tasks-container" class="tasks-container">
-
-                    <div class="loading-message">
-                        Loading monitoring tasks...
-                    </div>
-
-                </div>
-
-            </section>
-
-        </main>
+        </div>
 
     </div>
 
 
+    <!-- ========================================================
+         SHARED COMPONENTS
+         Must load before page-specific behaviour.
+         ======================================================== -->
+
+    <script src="../js/components.js"></script>
+
+
+    <!-- ========================================================
+         DASHBOARD BEHAVIOUR
+         ======================================================== -->
+
     <script src="../js/dashboard.js"></script>
 
+
 </body>
+
 </html>

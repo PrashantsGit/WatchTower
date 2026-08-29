@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>WatchTower — Login</title>
+
+
+    <!-- WatchTower design system -->
+
+    <link
+        rel="stylesheet"
+        href="../css/design-system.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/login.css"
+    >
+
+</head>
+
+
+<body class="auth-page">
+
+
+    <main class="auth-container">
+
+        <section
+            class="auth-card"
+            aria-labelledby="login-title"
+        >
+
+
+            <!-- =============================================
+                 BRAND
+                 ============================================= -->
+
+            <div class="auth-brand">
+
+                <!-- Logo placeholder.
+                     Real WatchTower logo comes later. -->
+
+                <div
+                    class="auth-brand-mark"
+                    aria-hidden="true"
+                >
+                    WT
+                </div>
+
+
+                <div class="auth-brand-name">
+                    WATCHTOWER
+                </div>
+
+
+                <div class="auth-brand-tagline">
+                    MONITOR • DETECT • NOTIFY
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                 LOGIN INTRO
+                 ============================================= -->
+
+            <div class="auth-intro">
+
+                <h1 id="login-title">
+                    Welcome back
+                </h1>
+
+                <p>
+                    Sign in to continue monitoring what matters.
+                </p>
+
+            </div>
+
+
+            <!-- =============================================
+                 LOGIN FORM
+                 ============================================= -->
+
+            <form
+                id="login-form"
+                class="auth-form"
+                novalidate
+            >
+
+
+                <div class="form-field">
+
+                    <label
+                        for="email"
+                        class="form-label"
+                    >
+                        Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="form-input"
+                        autocomplete="email"
+                        placeholder="you@example.com"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-field">
+
+                    <label
+                        for="password"
+                        class="form-label"
+                    >
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="form-input"
+                        autocomplete="current-password"
+                        placeholder="Enter your password"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- =========================================
+                     ERROR MESSAGE
+                     ========================================= -->
+
+                <div
+                    id="login-error"
+                    class="auth-error"
+                    role="alert"
+                    hidden
+                ></div>
+
+
+                <!-- =========================================
+                     SUBMIT
+                     ========================================= -->
+
+                <button
+                    type="submit"
+                    id="login-button"
+                    class="auth-submit"
+                >
+                    Sign In
+                </button>
+
+
+            </form>
+
+
+            <!-- =============================================
+                 REGISTER
+                 ============================================= -->
+
+            <div class="auth-secondary">
+
+                <span>
+                    Don't have an account?
+                </span>
+
+                <a
+                    href="register.html"
+                    class="auth-link"
+                >
+                    Create one
+                </a>
+
+            </div>
+
+
+        </section>
+
+
+        <!-- ================================================
+             AUTH FOOTER
+             ================================================ -->
+
+        <footer class="auth-footer">
+
+            <span>
+                WATCHTOWER
+            </span>
+
+            <span aria-hidden="true">
+                •
+            </span>
+
+            <span>
+                V1
+            </span>
+
+        </footer>
+
+    </main>
+
+
+    <!-- Login behaviour will be added next. -->
+
+    <script src="../js/auth.js"></script>
+
+</body>
+
+</html>

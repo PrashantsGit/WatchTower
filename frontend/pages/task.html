@@ -117,23 +117,50 @@
 
                     <section class="task-details-panel">
 
-                        <div class="panel-header">
+    <div class="panel-header">
 
-                            <div>
+        <div>
+            <h2 class="panel-title">
+                Task Information
+            </h2>
 
-                                <h2 class="panel-title">
-                                    Task Information
-                                </h2>
-
-                                <p class="panel-description">
-                                    Current configuration and monitoring state
-                                </p>
-
-                            </div>
-
-                        </div>
+            <p class="panel-description">
+                Current configuration and monitoring state
+            </p>
+        </div>
 
 
+        <!-- Task actions -->
+
+        <div class="task-header-actions">
+            <button
+                type="button"
+                id="edit-task-button"
+                class="secondary-btn"
+            >
+                Edit Task
+            </button>
+
+            <button
+                type="button"
+                id="toggle-task-button"
+                class="secondary-btn"
+            >
+                Pause Monitoring
+            </button>
+
+            <button
+                type="button"
+                id="delete-task-button"
+                class="danger-btn"
+            >
+                Delete Task
+            </button>
+
+        </div>
+        
+
+    </div>
                         <div class="task-information">
 
 
@@ -275,12 +302,12 @@
 
 
                             <button
-    type="button"
-    id="add-rule-button"
-    class="primary-btn"
->
-    + Add Rule
-</button>
+                                type="button"
+                                id="add-rule-button"
+                                class="primary-btn"
+                            >
+                                + Add Rule
+                            </button>
 
                         </div>
 
@@ -332,6 +359,420 @@
 
     <script src="../js/task.js"></script>
 
+<!-- ========================================================
+     EDIT RULE MODAL
+     ======================================================== -->
+
+<div id="edit-rule-modal" class="rule-modal" hidden>
+
+    <div
+        class="rule-modal-backdrop"
+        data-close-edit-modal
+    ></div>
+
+
+    <section
+        class="rule-modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-rule-title"
+    >
+
+        <div class="rule-modal-header">
+
+            <div>
+
+                <h2 id="edit-rule-title">
+                    Edit Monitoring Rule
+                </h2>
+
+                <p>
+                    Update the condition WatchTower should monitor.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="rule-modal-close"
+                data-close-edit-modal
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form
+            id="edit-rule-form"
+            class="rule-form"
+        >
+
+            <input
+                type="hidden"
+                id="edit-rule-id"
+            >
+
+
+            <div class="rule-form-field">
+
+                <label for="edit-rule-type">
+                    Rule Type
+                </label>
+
+                <select
+                    id="edit-rule-type"
+                    required
+                >
+                    <option value="PRICE">
+                        Price
+                    </option>
+
+                    <option value="STOCK">
+                        Stock
+                    </option>
+
+                    <option value="KEYWORD">
+                        Keyword
+                    </option>
+                </select>
+
+            </div>
+
+
+            <div class="rule-form-field">
+
+                <label for="edit-rule-operator">
+                    Condition
+                </label>
+
+                <select
+                    id="edit-rule-operator"
+                    required
+                >
+                    <option value="<">
+                        Less than
+                    </option>
+
+                    <option value="<=">
+                        Less than or equal to
+                    </option>
+
+                    <option value="=">
+                        Equal to
+                    </option>
+
+                    <option value=">=">
+                        Greater than or equal to
+                    </option>
+
+                    <option value=">">
+                        Greater than
+                    </option>
+
+                    <option value="contains">
+                        Contains
+                    </option>
+                </select>
+
+            </div>
+
+
+            <div class="rule-form-field">
+
+                <label for="edit-rule-target">
+                    Target Value
+                </label>
+
+                <input
+                    id="edit-rule-target"
+                    type="text"
+                    required
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <p
+                id="edit-rule-error"
+                class="rule-form-error"
+                hidden
+            ></p>
+
+
+            <div class="rule-modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    data-close-edit-modal
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    id="save-rule-button"
+                    class="primary-btn"
+                >
+                    Save Changes
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</div>
+
+<!-- ========================================================
+     EDIT TASK MODAL
+     ======================================================== -->
+
+<div id="edit-task-modal" class="rule-modal" hidden>
+
+    <div
+        class="rule-modal-backdrop"
+        data-close-edit-task-modal
+    ></div>
+
+
+    <section
+        class="rule-modal-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-task-title"
+    >
+
+        <div class="rule-modal-header">
+
+            <div>
+
+                <h2 id="edit-task-title">
+                    Edit Monitoring Task
+                </h2>
+
+                <p>
+                    Update the configuration for this monitor.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="rule-modal-close"
+                data-close-edit-task-modal
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form
+            id="edit-task-form"
+            class="rule-form"
+        >
+
+            <div class="rule-form-field">
+
+                <label for="edit-task-name">
+                    Task Name
+                </label>
+
+                <input
+                    id="edit-task-name"
+                    type="text"
+                    required
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="rule-form-field">
+
+                <label for="edit-task-url">
+                    Target URL
+                </label>
+
+                <input
+                    id="edit-task-url"
+                    type="url"
+                    required
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="rule-form-field">
+
+    <label for="edit-task-interval">
+        Check Interval
+    </label>
+
+    <select
+        id="edit-task-interval"
+        required
+    >
+        <option value="30">30 minutes</option>
+        <option value="60">1 hour</option>
+        <option value="120">2 hours</option>
+        <option value="240">4 hours</option>
+        <option value="720">12 hours</option>
+        <option value="1440">24 hours</option>
+    </select>
+
+    <p class="rule-form-hint">
+        How often WatchTower should check the target.
+    </p>
+
+</div>
+
+
+            <p class="rule-form-hint">
+                Interval is measured in minutes.
+            </p>
+
+
+            <p
+                id="edit-task-error"
+                class="rule-form-error"
+                hidden
+            ></p>
+
+
+            <div class="rule-modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    data-close-edit-task-modal
+                >
+                    Cancel
+                </button>
+
+
+                <button
+                    type="submit"
+                    id="save-task-button"
+                    class="primary-btn"
+                >
+                    Save Changes
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</div>
+
+<!-- ========================================================
+     DELETE TASK CONFIRMATION MODAL
+     ======================================================== -->
+
+<div
+    id="delete-task-modal"
+    class="rule-modal"
+    hidden
+>
+
+    <div
+        class="rule-modal-backdrop"
+        data-close-delete-task-modal
+    ></div>
+
+
+    <section
+        class="rule-modal-dialog delete-task-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="delete-task-title"
+    >
+
+        <div class="rule-modal-header">
+
+            <div>
+
+                <h2 id="delete-task-title">
+                    Delete Monitoring Task
+                </h2>
+
+                <p>
+                    This action cannot be undone.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="rule-modal-close"
+                data-close-delete-task-modal
+                aria-label="Close"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="delete-task-content">
+
+            <p>
+                Are you sure you want to delete
+                <strong id="delete-task-name">
+                    this task
+                </strong>?
+            </p>
+
+            <p class="delete-task-warning">
+                This will permanently remove the monitoring
+                task and its associated monitoring rules.
+            </p>
+
+            <p
+                id="delete-task-error"
+                class="rule-form-error"
+                hidden
+            ></p>
+
+        </div>
+
+
+        <div class="rule-modal-actions">
+
+            <button
+                type="button"
+                class="secondary-btn"
+                data-close-delete-task-modal
+            >
+                Cancel
+            </button>
+
+
+            <button
+                type="button"
+                id="confirm-delete-task-button"
+                class="danger-btn"
+            >
+                Delete Task
+            </button>
+
+        </div>
+
+    </section>
+
+</div>
 
 </body>
 

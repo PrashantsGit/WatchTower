@@ -533,3 +533,693 @@
         align-self: flex-start;
     }
 }
+
+/* ============================================================
+   RULE MANAGEMENT
+   ============================================================ */
+
+.rule-card {
+    margin: 14px 16px;
+    padding: 18px;
+    background: rgba(21, 26, 38, 0.72);
+    border: 1px solid #252d3d;
+    border-radius: 9px;
+
+    transition:
+        border-color 0.18s ease,
+        background 0.18s ease,
+        transform 0.18s ease;
+}
+
+.rule-card:hover {
+    background: rgba(25, 31, 44, 0.92);
+    border-color: rgba(242, 204, 113, 0.25);
+}
+
+.rule-card-disabled {
+    opacity: 0.72;
+}
+
+.rule-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.rule-card-main {
+    min-width: 0;
+}
+
+.rule-type {
+    color: #edf0f6;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+.rule-condition {
+    margin-top: 6px;
+    color: #8d98ae;
+    font-size: 13px;
+}
+
+.rule-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+
+    padding: 5px 9px;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.rule-status-enabled {
+    color: #69c980;
+    background: rgba(99, 199, 122, 0.08);
+    border: 1px solid rgba(99, 199, 122, 0.18);
+}
+
+.rule-status-disabled {
+    color: #8d98ae;
+    background: rgba(127, 138, 163, 0.07);
+    border: 1px solid rgba(127, 138, 163, 0.16);
+}
+
+.rule-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.rule-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+
+    margin-top: 17px;
+    padding-top: 14px;
+
+    border-top: 1px solid #202635;
+}
+
+.rule-action-button {
+    min-height: 32px;
+    padding: 0 11px;
+
+    background: transparent;
+
+    border: 1px solid #303747;
+    border-radius: 6px;
+
+    color: #aeb6c7;
+
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
+}
+
+.rule-action-secondary:hover {
+    background: rgba(242, 204, 113, 0.06);
+    border-color: rgba(242, 204, 113, 0.28);
+    color: #f2cc71;
+}
+
+.rule-action-enable {
+    color: #69c980;
+    border-color: rgba(99, 199, 122, 0.22);
+}
+
+.rule-action-enable:hover {
+    background: rgba(99, 199, 122, 0.08);
+    border-color: rgba(99, 199, 122, 0.38);
+}
+
+.rule-action-danger:hover {
+    background: rgba(248, 113, 113, 0.07);
+    border-color: rgba(248, 113, 113, 0.28);
+    color: #f87171;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 600px) {
+
+    .rule-card-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .rule-status {
+        align-self: flex-start;
+    }
+
+    .rule-card-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+}
+
+/* ============================================================
+   EDIT RULE MODAL
+   ============================================================ */
+
+.rule-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+}
+
+.rule-modal[hidden] {
+    display: none;
+}
+
+.rule-modal-backdrop {
+    position: absolute;
+    inset: 0;
+
+    background: rgba(3, 6, 12, 0.76);
+
+    backdrop-filter: blur(4px);
+}
+
+.rule-modal-dialog {
+    position: relative;
+    z-index: 1;
+
+    width: min(100%, 500px);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(18, 23, 35, 0.99),
+            rgba(10, 14, 23, 0.99)
+        );
+
+    border: 1px solid #2b3242;
+    border-radius: 12px;
+
+    box-shadow:
+        0 24px 70px rgba(0, 0, 0, 0.45);
+}
+
+.rule-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 22px;
+
+    border-bottom: 1px solid #202635;
+}
+
+.rule-modal-header h2 {
+    margin: 0;
+
+    color: #edf0f6;
+
+    font-size: 17px;
+    font-weight: 650;
+}
+
+.rule-modal-header p {
+    margin: 6px 0 0;
+
+    color: #69758d;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.rule-modal-close {
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    padding: 0;
+
+    background: transparent;
+
+    border: 1px solid transparent;
+    border-radius: 6px;
+
+    color: #7f8aa3;
+
+    font-family: inherit;
+    font-size: 22px;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease;
+}
+
+.rule-modal-close:hover {
+    background: rgba(127, 138, 163, 0.08);
+
+    border-color: #303747;
+
+    color: #edf0f6;
+}
+
+
+/* ============================================================
+   RULE FORM
+   ============================================================ */
+
+.rule-form {
+    padding: 22px;
+}
+
+.rule-form-field {
+    margin-bottom: 18px;
+}
+
+.rule-form-field label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #aeb6c7;
+
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+}
+
+.rule-form-field input,
+.rule-form-field select {
+    width: 100%;
+    min-height: 40px;
+
+    padding: 0 12px;
+
+    background: #0d121c;
+
+    border: 1px solid #2b3343;
+    border-radius: 7px;
+
+    color: #e4e8ef;
+
+    font-family: inherit;
+    font-size: 13px;
+
+    outline: none;
+
+    transition:
+        border-color 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.rule-form-field input:focus,
+.rule-form-field select:focus {
+    background: #101621;
+
+    border-color: rgba(242, 204, 113, 0.48);
+
+    box-shadow:
+        0 0 0 3px rgba(242, 204, 113, 0.07);
+}
+
+.rule-form-field select {
+    cursor: pointer;
+}
+
+.rule-form-field input::placeholder {
+    color: #58647b;
+}
+
+
+/* ============================================================
+   FORM ERROR
+   ============================================================ */
+
+.rule-form-error {
+    margin: -2px 0 18px;
+
+    padding: 10px 12px;
+
+    background: rgba(248, 113, 113, 0.07);
+
+    border: 1px solid rgba(248, 113, 113, 0.2);
+    border-radius: 7px;
+
+    color: #f28b8b;
+
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+
+/* ============================================================
+   MODAL ACTIONS
+   ============================================================ */
+
+.rule-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+
+    padding-top: 18px;
+
+    border-top: 1px solid #202635;
+}
+
+.primary-btn,
+.secondary-btn {
+    min-height: 36px;
+
+    padding: 0 14px;
+
+    border-radius: 7px;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 650;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        opacity 0.18s ease;
+}
+
+.primary-btn {
+    background: rgba(242, 204, 113, 0.1);
+
+    border: 1px solid rgba(242, 204, 113, 0.34);
+
+    color: #f2cc71;
+}
+
+.primary-btn:hover {
+    background: rgba(242, 204, 113, 0.16);
+
+    border-color: rgba(242, 204, 113, 0.5);
+}
+
+.primary-btn:disabled {
+    opacity: 0.55;
+
+    cursor: wait;
+}
+
+.secondary-btn {
+    background: transparent;
+
+    border: 1px solid #303747;
+
+    color: #aeb6c7;
+}
+
+.secondary-btn:hover {
+    background: rgba(127, 138, 163, 0.07);
+
+    border-color: #3a4355;
+
+    color: #edf0f6;
+}
+
+
+/* ============================================================
+   MODAL BODY LOCK
+   ============================================================ */
+
+body.modal-open {
+    overflow: hidden;
+}
+
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+
+@media (max-width: 600px) {
+
+    .rule-modal {
+        align-items: flex-end;
+
+        padding: 12px;
+    }
+
+    .rule-modal-dialog {
+        width: 100%;
+
+        max-height: calc(100vh - 24px);
+
+        overflow-y: auto;
+    }
+
+    .rule-modal-header,
+    .rule-form {
+        padding: 18px;
+    }
+
+    .rule-modal-actions {
+        flex-direction: column-reverse;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+        width: 100%;
+    }
+
+}
+
+/* ============================================================
+   TASK HEADER ACTIONS
+   ============================================================ */
+
+.task-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    flex-shrink: 0;
+}
+
+
+.task-header-actions .secondary-btn {
+    white-space: nowrap;
+}
+
+
+.task-resume-button {
+    color: var(--wt-success);
+
+    border-color: rgba(53, 201, 138, 0.3);
+    background: rgba(53, 201, 138, 0.06);
+}
+
+
+.task-resume-button:hover {
+    border-color: rgba(53, 201, 138, 0.5);
+    background: rgba(53, 201, 138, 0.1);
+}
+
+
+@media (max-width: 600px) {
+
+    .task-header-actions {
+        width: 100%;
+    }
+
+    .task-header-actions .secondary-btn {
+        width: 100%;
+    }
+
+}
+
+/* ============================================================
+   TASK EDIT FORM HINT
+   ============================================================ */
+
+.rule-form-hint {
+    margin: -8px 0 18px;
+
+    color: #68748b;
+
+    font-size: 11px;
+}
+
+/* ============================================================
+   TASK ACTIONS
+   ============================================================ */
+
+.task-header-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    flex-shrink: 0;
+
+}
+
+
+.danger-btn {
+
+    padding: 9px 13px;
+
+    color: #e97878;
+
+    background: rgba(220, 76, 76, 0.07);
+
+    border: 1px solid rgba(220, 76, 76, 0.28);
+
+    border-radius: 7px;
+
+    font-size: 12px;
+
+    font-weight: 650;
+
+    cursor: pointer;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        transform 0.18s ease;
+
+}
+
+
+.danger-btn:hover {
+
+    color: #f28a8a;
+
+    background: rgba(220, 76, 76, 0.12);
+
+    border-color: rgba(220, 76, 76, 0.45);
+
+}
+
+
+.danger-btn:active {
+
+    transform: translateY(1px);
+
+}
+
+
+.danger-btn:disabled {
+
+    opacity: 0.55;
+
+    cursor: not-allowed;
+
+}
+
+
+/* ============================================================
+   DELETE TASK MODAL
+   ============================================================ */
+
+.delete-task-dialog {
+
+    max-width: 480px;
+
+}
+
+
+.delete-task-content {
+
+    padding: 22px;
+
+}
+
+
+.delete-task-content p {
+
+    margin: 0;
+
+    color: var(--wt-text-secondary);
+
+    font-size: var(--wt-text-sm);
+
+    line-height: 1.6;
+
+}
+
+
+.delete-task-content strong {
+
+    color: var(--wt-text);
+
+}
+
+
+.delete-task-warning {
+
+    margin-top: 12px !important;
+
+    padding: 12px 14px;
+
+    color: #d99a9a !important;
+
+    background: rgba(220, 76, 76, 0.06);
+
+    border: 1px solid rgba(220, 76, 76, 0.14);
+
+    border-radius: var(--wt-radius-sm);
+
+    font-size: var(--wt-text-xs) !important;
+
+}
+
+
+@media (max-width: 700px) {
+
+    .task-header-actions {
+
+        width: 100%;
+
+        flex-wrap: wrap;
+
+    }
+
+
+    .task-header-actions button {
+
+        flex: 1;
+
+    }
+
+}

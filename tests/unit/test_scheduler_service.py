@@ -260,7 +260,7 @@ def test_scheduler_updates_execution_times_after_success():
 
         expected_next_execution = (
             task.last_checked_at
-            + timedelta(seconds=task.check_interval)
+            + timedelta(minutes=task.check_interval)
         )
 
         assert task.next_execution_at == expected_next_execution

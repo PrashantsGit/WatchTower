@@ -32,8 +32,8 @@ class SchedulerService:
 
                 task.last_checked_at = now
                 task.next_execution_at = (
-                    now + timedelta(seconds=task.check_interval)
-                )
+                    now + timedelta(minutes=task.check_interval)
+            )
 
                 self.db.commit()
 

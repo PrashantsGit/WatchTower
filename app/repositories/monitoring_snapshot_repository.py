@@ -48,3 +48,22 @@ class MonitoringSnapshotRepository:
         return list(
             self.db.scalars(statement).all()
         )
+
+    def get_latest_successful_by_task(
+        self,
+        task_id: int,
+    ) -> MonitoringSnapshot | None:
+
+        statement = (
+            select(MonitoringSnapshot)
+            .where(
+                MonitoringSnapshot.task_id == task_id,
+                MonitoringSnapshot.execution_status == "SUCCESS",
+            )
+            .order_by(
+                MonitoringSnapshot.captured_at.desc(),
+            )
+            .limit(1)
+        )
+
+        return self.db.scalar(statement)

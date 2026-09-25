@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime, timedelta, timezone
 
 from app.core.exceptions import ResourceNotFoundError
 from app.database.session import SessionLocal
@@ -232,6 +233,136 @@ def test_list_snapshots_rejects_other_user(
         match="Monitoring task not found",
     ):
         service.list_snapshots(
+            task_id=task.id,
+            user_id=999999,
+        )
+
+
+def test_get_latest_successful_snapshot_returns_latest_successful_snapshot(
+    db,
+    task,
+):
+    service = MonitoringSnapshotService(db)
+
+    now = datetime.now(timezone.utc)
+
+    older_success = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data={
+            "price": "50000",
+        },
+        content_hash="old-success",
+        execution_status="SUCCESS",
+        captured_at=now - timedelta(minutes=2),
+    )
+
+    latest_success = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data={
+            "price": "45000",
+        },
+        content_hash="latest-success",
+        execution_status="SUCCESS",
+        captured_at=now - timedelta(minutes=1),
+    )
+
+    db.add_all([
+        older_success,
+        latest_success,
+    ])
+    db.commit()
+
+    result = service.get_latest_successful_snapshot(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    assert result is not None
+    assert result.id == latest_success.id
+    assert result.snapshot_data == {
+        "price": "45000",
+    }
+    assert result.execution_status == "SUCCESS"
+
+
+def test_get_latest_successful_snapshot_ignores_failed_snapshots(
+    db,
+    task,
+):
+    service = MonitoringSnapshotService(db)
+
+    now = datetime.now(timezone.utc)
+
+    successful_snapshot = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data={
+            "price": "50000",
+        },
+        content_hash="success",
+        execution_status="SUCCESS",
+        captured_at=now - timedelta(minutes=2),
+    )
+
+    failed_snapshot = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data={},
+        content_hash="failed-snapshot-hash",
+        execution_status="FAILED",
+        captured_at=now - timedelta(minutes=1),
+    )
+
+    db.add_all([
+        successful_snapshot,
+        failed_snapshot,
+    ])
+    db.commit()
+
+    result = service.get_latest_successful_snapshot(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    assert result is not None
+    assert result.id == successful_snapshot.id
+    assert result.execution_status == "SUCCESS"
+
+
+def test_get_latest_successful_snapshot_returns_none_when_no_successful_snapshot(
+    db,
+    task,
+):
+    service = MonitoringSnapshotService(db)
+
+    failed_snapshot = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data={},
+        content_hash="failed-snapshot-hash",
+        execution_status="FAILED",
+        captured_at=datetime.now(timezone.utc),
+    )
+
+    db.add(failed_snapshot)
+    db.commit()
+
+    result = service.get_latest_successful_snapshot(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    assert result is None
+
+
+def test_get_latest_successful_snapshot_rejects_other_user(
+    db,
+    task,
+):
+    service = MonitoringSnapshotService(db)
+
+    with pytest.raises(
+        ResourceNotFoundError,
+        match="Monitoring task not found",
+    ):
+        service.get_latest_successful_snapshot(
             task_id=task.id,
             user_id=999999,
         )

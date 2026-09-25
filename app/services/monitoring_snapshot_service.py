@@ -94,3 +94,23 @@ class MonitoringSnapshotService:
         return self.repository.list_by_task(
             task_id
         )
+
+    def get_latest_successful_snapshot(
+        self,
+        task_id: int,
+        user_id: int,
+    ) -> MonitoringSnapshot | None:
+
+        task = self.db.get(
+            MonitoringTask,
+            task_id,
+        )
+
+        if task is None or task.user_id != user_id:
+            raise ResourceNotFoundError(
+                "Monitoring task not found."
+            )
+
+        return self.repository.get_latest_successful_by_task(
+            task_id
+        )

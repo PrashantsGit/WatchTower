@@ -1,7 +1,14 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Boolean, DateTime, String, UniqueConstraint, func
-from sqlalchemy.orm import Mapped, mapped_column,relationship
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    DateTime,
+    String,
+    UniqueConstraint,
+    func,
+)
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
 
@@ -10,7 +17,10 @@ class User(Base):
     __tablename__ = "users"
 
     __table_args__ = (
-        UniqueConstraint("email", name="uq_users_email"),
+        UniqueConstraint(
+            "email",
+            name="uq_users_email",
+        ),
     )
 
     id: Mapped[int] = mapped_column(
@@ -64,5 +74,12 @@ class User(Base):
     monitoring_tasks = relationship(
         "MonitoringTask",
         back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+    notification_preferences = relationship(
+        "NotificationPreference",
+        back_populates="user",
+        uselist=False,
         cascade="all, delete-orphan",
     )

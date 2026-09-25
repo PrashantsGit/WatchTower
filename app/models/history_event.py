@@ -9,9 +9,7 @@ from app.database.base import Base
 class HistoryEvent(Base):
     __tablename__ = "history_events"
 
-    id: Mapped[int] = mapped_column(
-        primary_key=True,
-    )
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     task_id: Mapped[int] = mapped_column(
         ForeignKey(
@@ -79,4 +77,10 @@ class HistoryEvent(Base):
     snapshot = relationship(
         "MonitoringSnapshot",
         back_populates="history_events",
+    )
+
+    notifications = relationship(
+        "Notification",
+        back_populates="history_event",
+        cascade="all, delete-orphan",
     )

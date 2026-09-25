@@ -8,6 +8,9 @@ from app.monitoring.engine import MonitoringEngineService
 from unittest.mock import Mock
 from app.monitoring.extractor import ExtractedData
 from app.monitoring.retriever import RetrievedPage
+from datetime import datetime, timedelta, timezone
+
+from app.models.monitoring_snapshot import MonitoringSnapshot
 
 from app.monitoring.evaluator import (
     RuleEvaluationResult,
@@ -447,7 +450,7 @@ def test_execute_does_not_create_history_event_when_rule_does_not_match(
 
     assert events == []
 
-def test_execute_creates_history_event_when_rule_matches(
+def test_execute_does_not_create_history_event_on_first_matching_execution(
     db,
     task,
 ):
@@ -509,17 +512,7 @@ def test_execute_creates_history_event_when_rule_matches(
         task.id
     )
 
-    assert len(events) == 1
-
-    event = events[0]
-
-    assert event.task_id == task.id
-    assert event.rule_id == rule.id
-    assert event.snapshot_id == snapshots[0].id
-    assert event.event_type == "PRICE_DROP"
-    assert event.previous_value is None
-    assert event.current_value == "45000"
-    assert event.event_message == "Price condition triggered."
+    assert events == []
 
 def test_execute_creates_failed_snapshot_when_retrieval_fails(
     db,
@@ -613,6 +606,621 @@ def test_execute_does_not_create_history_event_when_retrieval_fails(
     )
 
     assert result is None
+
+    events = service.history_event_service.list_events(
+        task.id
+    )
+
+    assert events == []
+
+def test_execute_first_successful_execution_creates_baseline_without_history(
+    db,
+    task,
+):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    retriever.retrieve.return_value = RetrievedPage(
+        url="https://example.com",
+        status_code=200,
+        html="<html>Example</html>",
+    )
+
+    extracted_data = ExtractedData(
+        price="45000",
+    )
+
+    extractor.extract.return_value = extracted_data
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="PRICE",
+        operator="<",
+        target_value="50000",
+        is_enabled=True,
+    )
+
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    evaluator.evaluate_all.return_value = [
+        RuleEvaluationResult(
+            rule=rule,
+            matched=True,
+        )
+    ]
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+
+    service.execute(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    snapshots = service.snapshot_service.list_snapshots(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    events = service.history_event_service.list_events(
+        task.id
+    )
+
+    assert len(snapshots) == 1
+    assert snapshots[0].execution_status == "SUCCESS"
+    assert events == []
+
+def test_execute_does_not_create_history_event_when_price_is_unchanged(
+    db,
+    task,
+):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    baseline = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data={
+            "price": "45000",
+            "availability": None,
+            "text": None,
+        },
+        content_hash=MonitoringEngineService._calculate_content_hash(
+            {
+                "price": "45000",
+                "availability": None,
+                "text": None,
+            }
+        ),
+        execution_status="SUCCESS",
+        captured_at=datetime.now(timezone.utc) - timedelta(minutes=2),
+    )
+
+    db.add(baseline)
+    db.commit()
+
+    retriever.retrieve.return_value = RetrievedPage(
+        url="https://example.com",
+        status_code=200,
+        html="<html>Example</html>",
+    )
+
+    extractor.extract.return_value = ExtractedData(
+        price="45000",
+    )
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="PRICE",
+        operator="<",
+        target_value="50000",
+        is_enabled=True,
+    )
+
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    evaluator.evaluate_all.return_value = [
+        RuleEvaluationResult(
+            rule=rule,
+            matched=True,
+        )
+    ]
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+
+    service.execute(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    events = service.history_event_service.list_events(
+        task.id
+    )
+
+    assert events == []
+
+def test_execute_creates_history_event_when_price_changes(
+    db,
+    task,
+):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    baseline = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data={
+            "price": "50000",
+            "availability": None,
+            "text": None,
+        },
+        content_hash=MonitoringEngineService._calculate_content_hash(
+            {
+                "price": "50000",
+                "availability": None,
+                "text": None,
+            }
+        ),
+        execution_status="SUCCESS",
+        captured_at=datetime.now(timezone.utc) - timedelta(minutes=2),
+    )
+
+    db.add(baseline)
+    db.commit()
+
+    retriever.retrieve.return_value = RetrievedPage(
+        url="https://example.com",
+        status_code=200,
+        html="<html>Example</html>",
+    )
+
+    extractor.extract.return_value = ExtractedData(
+        price="45000",
+    )
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="PRICE",
+        operator="<",
+        target_value="50000",
+        is_enabled=True,
+    )
+
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    evaluator.evaluate_all.return_value = [
+        RuleEvaluationResult(
+            rule=rule,
+            matched=True,
+        )
+    ]
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+
+    service.execute(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    events = service.history_event_service.list_events(
+        task.id
+    )
+
+    assert len(events) == 1
+
+    assert events[0].rule_id == rule.id
+    assert events[0].previous_value == "50000"
+    assert events[0].current_value == "45000"
+
+def test_execute_ignores_failed_snapshot_when_detecting_change(
+    db,
+    task,
+):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    successful_baseline = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data={
+            "price": "50000",
+            "availability": None,
+            "text": None,
+        },
+        content_hash=MonitoringEngineService._calculate_content_hash(
+            {
+                "price": "50000",
+                "availability": None,
+                "text": None,
+            }
+        ),
+        execution_status="SUCCESS",
+        captured_at=datetime.now(timezone.utc) - timedelta(minutes=3),
+    )
+
+    failed_snapshot = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data={},
+        content_hash=MonitoringEngineService._calculate_content_hash({}),
+        execution_status="FAILED",
+        captured_at=datetime.now(timezone.utc) - timedelta(minutes=1),
+    )
+
+    db.add_all([
+        successful_baseline,
+        failed_snapshot,
+    ])
+    db.commit()
+
+    retriever.retrieve.return_value = RetrievedPage(
+        url="https://example.com",
+        status_code=200,
+        html="<html>Example</html>",
+    )
+
+    extractor.extract.return_value = ExtractedData(
+        price="45000",
+    )
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="PRICE",
+        operator="<",
+        target_value="50000",
+        is_enabled=True,
+    )
+
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    evaluator.evaluate_all.return_value = [
+        RuleEvaluationResult(
+            rule=rule,
+            matched=True,
+        )
+    ]
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+
+    service.execute(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    events = service.history_event_service.list_events(
+        task.id
+    )
+
+    assert len(events) == 1
+    assert events[0].previous_value == "50000"
+    assert events[0].current_value == "45000"
+
+def test_execute_does_not_create_history_event_when_availability_is_unchanged(
+    db,
+    task,
+):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    baseline = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data={
+            "price": None,
+            "availability": "IN_STOCK",
+            "text": None,
+        },
+        content_hash=MonitoringEngineService._calculate_content_hash(
+            {
+                "price": None,
+                "availability": "IN_STOCK",
+                "text": None,
+            }
+        ),
+        execution_status="SUCCESS",
+        captured_at=datetime.now(timezone.utc) - timedelta(minutes=2),
+    )
+
+    db.add(baseline)
+    db.commit()
+
+    retriever.retrieve.return_value = RetrievedPage(
+        url="https://example.com",
+        status_code=200,
+        html="<html>Example</html>",
+    )
+
+    extractor.extract.return_value = ExtractedData(
+        availability="IN_STOCK",
+    )
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="AVAILABILITY",
+        operator="=",
+        target_value="IN_STOCK",
+        is_enabled=True,
+    )
+
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    evaluator.evaluate_all.return_value = [
+        RuleEvaluationResult(
+            rule=rule,
+            matched=True,
+        )
+    ]
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+
+    service.execute(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    events = service.history_event_service.list_events(
+        task.id
+    )
+
+    assert events == []
+
+def test_execute_creates_history_event_when_availability_changes(
+    db,
+    task,
+):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    baseline = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data={
+            "price": None,
+            "availability": "OUT_OF_STOCK",
+            "text": None,
+        },
+        content_hash=MonitoringEngineService._calculate_content_hash(
+            {
+                "price": None,
+                "availability": "OUT_OF_STOCK",
+                "text": None,
+            }
+        ),
+        execution_status="SUCCESS",
+        captured_at=datetime.now(timezone.utc) - timedelta(minutes=2),
+    )
+
+    db.add(baseline)
+    db.commit()
+
+    retriever.retrieve.return_value = RetrievedPage(
+        url="https://example.com",
+        status_code=200,
+        html="<html>Example</html>",
+    )
+
+    extractor.extract.return_value = ExtractedData(
+        availability="IN_STOCK",
+    )
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="AVAILABILITY",
+        operator="=",
+        target_value="IN_STOCK",
+        is_enabled=True,
+    )
+
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    evaluator.evaluate_all.return_value = [
+        RuleEvaluationResult(
+            rule=rule,
+            matched=True,
+        )
+    ]
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+
+    service.execute(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    events = service.history_event_service.list_events(
+        task.id
+    )
+
+    assert len(events) == 1
+    assert events[0].previous_value == "OUT_OF_STOCK"
+    assert events[0].current_value == "IN_STOCK"
+
+def test_execute_creates_history_event_when_keyword_becomes_present(
+    db,
+    task,
+):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    baseline = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data={
+            "price": None,
+            "availability": None,
+            "text": "This product is currently unavailable.",
+        },
+        content_hash=MonitoringEngineService._calculate_content_hash(
+            {
+                "price": None,
+                "availability": None,
+                "text": "This product is currently unavailable.",
+            }
+        ),
+        execution_status="SUCCESS",
+        captured_at=datetime.now(timezone.utc) - timedelta(minutes=2),
+    )
+
+    db.add(baseline)
+    db.commit()
+
+    retriever.retrieve.return_value = RetrievedPage(
+        url="https://example.com",
+        status_code=200,
+        html="<html>Sale now available</html>",
+    )
+
+    extractor.extract.return_value = ExtractedData(
+        text="This product is now on SALE.",
+    )
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="KEYWORD",
+        operator="CONTAINS",
+        target_value="SALE",
+        is_enabled=True,
+    )
+
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    evaluator.evaluate_all.return_value = [
+        RuleEvaluationResult(
+            rule=rule,
+            matched=True,
+        )
+    ]
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+
+    service.execute(
+        task_id=task.id,
+        user_id=41,
+    )
+
+    events = service.history_event_service.list_events(
+        task.id
+    )
+
+    assert len(events) == 1
+
+def test_execute_does_not_create_history_event_when_keyword_remains_present(
+    db,
+    task,
+):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    baseline = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data={
+            "price": None,
+            "availability": None,
+            "text": "Huge SALE available today.",
+        },
+        content_hash=MonitoringEngineService._calculate_content_hash(
+            {
+                "price": None,
+                "availability": None,
+                "text": "Huge SALE available today.",
+            }
+        ),
+        execution_status="SUCCESS",
+        captured_at=datetime.now(timezone.utc) - timedelta(minutes=2),
+    )
+
+    db.add(baseline)
+    db.commit()
+
+    retriever.retrieve.return_value = RetrievedPage(
+        url="https://example.com",
+        status_code=200,
+        html="<html>Big SALE available now</html>",
+    )
+
+    extractor.extract.return_value = ExtractedData(
+        text="Big SALE available now.",
+    )
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="KEYWORD",
+        operator="CONTAINS",
+        target_value="SALE",
+        is_enabled=True,
+    )
+
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    evaluator.evaluate_all.return_value = [
+        RuleEvaluationResult(
+            rule=rule,
+            matched=True,
+        )
+    ]
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+
+    service.execute(
+        task_id=task.id,
+        user_id=41,
+    )
 
     events = service.history_event_service.list_events(
         task.id

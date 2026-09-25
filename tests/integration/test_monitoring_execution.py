@@ -139,7 +139,8 @@ def test_monitoring_execution_with_real_website():
         assert "Example Domain" in snapshot.snapshot_data["text"]
         assert len(snapshot.content_hash) == 64
 
-        # Verify history event was persisted
+        # First successful execution establishes the baseline.
+        # No history event should be created.
         history_event = (
             db.query(HistoryEvent)
             .filter(
@@ -147,15 +148,10 @@ def test_monitoring_execution_with_real_website():
                 HistoryEvent.rule_id == rule_id,
                 HistoryEvent.snapshot_id == snapshot.id,
             )
-            .order_by(HistoryEvent.id.desc())
             .first()
         )
 
-        assert history_event is not None
-        assert history_event.event_type == "KEYWORD_DETECTED"
-        assert history_event.event_message == (
-            "Keyword condition triggered."
-        )
+        assert history_event is None
 
     finally:
         db.close()

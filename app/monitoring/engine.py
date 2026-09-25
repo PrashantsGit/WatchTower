@@ -26,6 +26,7 @@ from app.services.monitoring_snapshot_service import (
     MonitoringSnapshotService,
 )
 
+
 @dataclass
 class MonitoringExecutionContext:
     task: MonitoringTask
@@ -181,6 +182,13 @@ class MonitoringEngineService:
         if context is None:
             return None
 
+        previous_snapshot = (
+            self.snapshot_service.get_latest_successful_snapshot(
+                task_id=context.task.id,
+                user_id=user_id,
+            )
+        )
+
         snapshot_data = {
             "price": context.data.price,
             "availability": context.data.availability,
@@ -197,23 +205,44 @@ class MonitoringEngineService:
             execution_status="SUCCESS",
         )
 
+        # The first successful snapshot establishes the baseline.
+        # It does not create a history event.
+        if previous_snapshot is None:
+            return context
+
         triggered = self.trigger.get_triggered_rules(
             context.evaluations
         )
 
         for evaluation in triggered:
+            previous_value = self._get_previous_value(
+                rule=evaluation.rule,
+                snapshot_data=previous_snapshot.snapshot_data,
+            )
+
+            current_value = self._get_current_value(
+                rule=evaluation.rule,
+                data=context.data,
+            )
+
+            if not self._has_meaningful_change(
+                rule=evaluation.rule,
+                previous_value=previous_value,
+                current_value=current_value,
+            ):
+                continue
+
             self.history_event_service.create_event(
                 task_id=context.task.id,
                 rule_id=evaluation.rule.id,
                 snapshot_id=snapshot.id,
                 event_type=self._get_event_type(
-                    evaluation.rule.rule_type
+                    rule_type=evaluation.rule.rule_type,
+                    previous_value=previous_value,
+                    current_value=current_value,
                 ),
-                previous_value=None,
-                current_value=self._get_current_value(
-                    evaluation.rule.rule_type,
-                    context.data,
-                ),
+                previous_value=previous_value,
+                current_value=current_value,
                 event_message=self._get_event_message(
                     evaluation.rule.rule_type,
                     context.data,
@@ -221,6 +250,7 @@ class MonitoringEngineService:
             )
 
         return context
+
     @staticmethod
     def _calculate_content_hash(
         snapshot_data: dict,
@@ -240,39 +270,134 @@ class MonitoringEngineService:
         ).hexdigest()
 
     @staticmethod
-    def _get_event_type(
-        rule_type: str,
-    ) -> str:
+    def _get_previous_value(
+        rule: MonitoringRule,
+        snapshot_data: dict,
+    ) -> str | None:
 
-        event_types = {
-            "PRICE": "PRICE_DROP",
-            "AVAILABILITY": "STOCK_AVAILABLE",
-            "KEYWORD": "KEYWORD_DETECTED",
-        }
+        rule_type = rule.rule_type.upper()
 
-        return event_types.get(
-            rule_type.upper(),
-            "RULE_TRIGGERED",
-        )
+        if rule_type == "PRICE":
+            return snapshot_data.get("price")
+
+        if rule_type == "AVAILABILITY":
+            value = snapshot_data.get("availability")
+
+            if value is None:
+                return None
+
+            return value.upper()
+
+        if rule_type == "KEYWORD":
+            text = snapshot_data.get("text")
+
+            if text is None:
+                return None
+
+            keyword_present = (
+                rule.target_value.lower()
+                in text.lower()
+            )
+
+            return (
+                "PRESENT"
+                if keyword_present
+                else "ABSENT"
+            )
+
+        return None
 
     @staticmethod
     def _get_current_value(
-        rule_type: str,
+        rule: MonitoringRule,
         data: ExtractedData,
     ) -> str | None:
 
-        rule_type = rule_type.upper()
+        rule_type = rule.rule_type.upper()
 
         if rule_type == "PRICE":
             return data.price
 
         if rule_type == "AVAILABILITY":
-            return data.availability
+            if data.availability is None:
+                return None
+
+            return data.availability.upper()
 
         if rule_type == "KEYWORD":
-            return data.text
+            if data.text is None:
+                return None
+
+            keyword_present = (
+                rule.target_value.lower()
+                in data.text.lower()
+            )
+
+            return (
+                "PRESENT"
+                if keyword_present
+                else "ABSENT"
+            )
 
         return None
+
+    @staticmethod
+    def _has_meaningful_change(
+        rule: MonitoringRule,
+        previous_value: str | None,
+        current_value: str | None,
+    ) -> bool:
+
+        if previous_value is None:
+            return False
+
+        if current_value is None:
+            return False
+
+        rule_type = rule.rule_type.upper()
+
+        if rule_type == "PRICE":
+            return previous_value != current_value
+
+        if rule_type == "AVAILABILITY":
+            return previous_value != current_value
+
+        if rule_type == "KEYWORD":
+            return previous_value != current_value
+
+        return previous_value != current_value
+
+    @staticmethod
+    def _get_event_type(
+        rule_type: str,
+        previous_value: str | None = None,
+        current_value: str | None = None,
+    ) -> str:
+
+        rule_type = rule_type.upper()
+
+        if rule_type == "PRICE":
+            return "PRICE_DROP"
+
+        if rule_type == "AVAILABILITY":
+            if (
+                previous_value == "OUT_OF_STOCK"
+                and current_value == "IN_STOCK"
+            ):
+                return "STOCK_AVAILABLE"
+
+            if (
+                previous_value == "IN_STOCK"
+                and current_value == "OUT_OF_STOCK"
+            ):
+                return "STOCK_UNAVAILABLE"
+
+            return "AVAILABILITY_CHANGED"
+
+        if rule_type == "KEYWORD":
+            return "KEYWORD_DETECTED"
+
+        return "RULE_TRIGGERED"
 
     @staticmethod
     def _get_event_message(

@@ -39,16 +39,22 @@ def make_notification(
     )
 
 
-def make_service(notifications, provider):
+
+def make_service(notifications, provider, push_provider=None):
     service = NotificationDeliveryService(
         db=Mock(),
         email_provider=provider,
+        push_provider=push_provider or Mock(),
     )
     service.repository.list_pending = Mock(
         return_value=notifications,
     )
     service.notification_service.mark_delivered = Mock()
     service.notification_service.mark_failed = Mock()
+    service.browser_subscription_repository.list_for_user = Mock(
+        return_value=[],
+    )
+    service.browser_subscription_service.delete_subscription = Mock()
     return service
 
 
@@ -126,32 +132,180 @@ def test_delivery_marks_failed_email_and_continues():
     }
 
 
-def test_delivery_skips_browser_push_notifications():
-    email_notification = make_notification(1)
-    push_notification = make_notification(
-        2,
-        channel="BROWSER_PUSH",
+
+def make_subscription(subscription_id=1, user_id=41):
+    return SimpleNamespace(
+        id=subscription_id,
+        user_id=user_id,
+        endpoint=f"https://push.example.test/{subscription_id}",
+        p256dh_key="test-p256dh",
+        auth_key="test-auth",
     )
 
-    provider = Mock()
+
+def test_delivery_sends_browser_push_to_registered_subscription():
+    notification = make_notification(2, channel="BROWSER_PUSH")
+    subscription = make_subscription()
+    push_provider = Mock()
+
     service = make_service(
-        [email_notification, push_notification],
-        provider,
+        [notification],
+        Mock(),
+        push_provider=push_provider,
     )
+    service.browser_subscription_repository.list_for_user.return_value = [
+        subscription,
+    ]
 
     result = service.process_pending()
 
-    provider.send.assert_called_once()
+    push_provider.send.assert_called_once_with(
+        endpoint=subscription.endpoint,
+        p256dh_key=subscription.p256dh_key,
+        auth_key=subscription.auth_key,
+        title="WatchTower alert: Price Drop",
+        body=service._build_email_body(
+            event=notification.history_event,
+            task_name="Product Watch",
+            target_url="https://example.com/product",
+        ),
+        target_url="https://example.com/product",
+    )
     service.notification_service.mark_delivered.assert_called_once_with(
-        notification_id=1,
+        notification_id=2,
         user_id=41,
     )
-
     service.notification_service.mark_failed.assert_not_called()
 
     assert result == {
         "processed": 1,
         "delivered": 1,
+        "failed": 0,
+        "skipped": 0,
+    }
+
+
+def test_delivery_removes_expired_push_subscription():
+    from app.notifications.providers import ExpiredPushSubscriptionError
+
+    notification = make_notification(2, channel="BROWSER_PUSH")
+    subscription = make_subscription()
+    push_provider = Mock()
+    push_provider.send.side_effect = ExpiredPushSubscriptionError(
+        "Subscription expired"
+    )
+
+    service = make_service(
+        [notification],
+        Mock(),
+        push_provider=push_provider,
+    )
+    service.browser_subscription_repository.list_for_user.return_value = [
+        subscription,
+    ]
+
+    result = service.process_pending()
+
+    service.browser_subscription_service.delete_subscription.assert_called_once_with(
+        subscription_id=subscription.id,
+        user_id=41,
+    )
+    service.notification_service.mark_failed.assert_called_once()
+    assert result == {
+        "processed": 1,
+        "delivered": 0,
+        "failed": 1,
+        "skipped": 0,
+    }
+
+
+def test_delivery_marks_push_failed_when_no_subscriptions_exist():
+    notification = make_notification(2, channel="BROWSER_PUSH")
+    push_provider = Mock()
+
+    service = make_service(
+        [notification],
+        Mock(),
+        push_provider=push_provider,
+    )
+
+    result = service.process_pending()
+
+    push_provider.send.assert_not_called()
+    service.notification_service.mark_failed.assert_called_once()
+    error_message = (
+        service.notification_service.mark_failed.call_args.kwargs[
+            "error_message"
+        ]
+    )
+    assert "No browser push subscriptions" in error_message
+
+    assert result == {
+        "processed": 1,
+        "delivered": 0,
+        "failed": 1,
+        "skipped": 0,
+    }
+
+
+def test_delivery_continues_after_temporary_push_failure():
+    notification = make_notification(2, channel="BROWSER_PUSH")
+    first = make_subscription(subscription_id=1)
+    second = make_subscription(subscription_id=2)
+    push_provider = Mock()
+    push_provider.send.side_effect = [
+        RuntimeError("Push service unavailable"),
+        None,
+    ]
+
+    service = make_service(
+        [notification],
+        Mock(),
+        push_provider=push_provider,
+    )
+    service.browser_subscription_repository.list_for_user.return_value = [
+        first,
+        second,
+    ]
+
+    result = service.process_pending()
+
+    assert push_provider.send.call_count == 2
+    service.notification_service.mark_delivered.assert_called_once_with(
+        notification_id=2,
+        user_id=41,
+    )
+    service.notification_service.mark_failed.assert_not_called()
+
+    assert result == {
+        "processed": 1,
+        "delivered": 1,
+        "failed": 0,
+        "skipped": 0,
+    }
+
+
+def test_unknown_notification_channel_is_skipped():
+    notification = make_notification(3, channel="UNKNOWN_CHANNEL")
+    email_provider = Mock()
+    push_provider = Mock()
+
+    service = make_service(
+        [notification],
+        email_provider,
+        push_provider=push_provider,
+    )
+
+    result = service.process_pending()
+
+    email_provider.send.assert_not_called()
+    push_provider.send.assert_not_called()
+    service.notification_service.mark_delivered.assert_not_called()
+    service.notification_service.mark_failed.assert_not_called()
+
+    assert result == {
+        "processed": 0,
+        "delivered": 0,
         "failed": 0,
         "skipped": 1,
     }

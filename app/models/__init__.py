@@ -5,6 +5,7 @@ from app.models.monitoring_snapshot import MonitoringSnapshot
 from app.models.history_event import HistoryEvent
 from app.models.notification_preference import NotificationPreference
 from app.models.notification import Notification
+from app.models.browser_push_subscription import BrowserPushSubscription
 
 __all__ = [
     "User",
@@ -14,4 +15,6 @@ __all__ = [
     "HistoryEvent",
     "NotificationPreference",
     "Notification",
+    "BrowserPushSubscription",
+
 ]

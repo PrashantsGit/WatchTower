@@ -358,3 +358,128 @@ def test_mark_notification_requires_ownership():
         )
         db.commit()
         db.close()
+
+def test_list_notifications_only_returns_current_users():
+    db = SessionLocal()
+
+    try:
+        first_user, _, _, _, first_event = create_test_data(db)
+
+        second_user = User(
+            full_name="Second Notification User",
+            email="notification-service-second@example.com",
+            password_hash="test-password-hash",
+        )
+        db.add(second_user)
+        db.flush()
+
+        second_task = MonitoringTask(
+            user_id=second_user.id,
+            name="Second User Task",
+            target_url="https://example.org",
+            check_interval=60,
+            is_active=True,
+        )
+        db.add(second_task)
+        db.flush()
+
+        second_rule = MonitoringRule(
+            task_id=second_task.id,
+            rule_type="PRICE",
+            operator="LESS_THAN",
+            target_value="100",
+            is_enabled=True,
+        )
+        db.add(second_rule)
+        db.flush()
+
+        second_snapshot = MonitoringSnapshot(
+            task_id=second_task.id,
+            snapshot_data={
+                "price": "120",
+                "availability": "IN_STOCK",
+                "text": "Second example product",
+            },
+            content_hash="notification-second-user-hash",
+            execution_status="SUCCESS",
+        )
+        db.add(second_snapshot)
+        db.flush()
+
+        second_event = HistoryEvent(
+            task_id=second_task.id,
+            rule_id=second_rule.id,
+            snapshot_id=second_snapshot.id,
+            event_type="PRICE_DROP",
+            previous_value="120",
+            current_value="90",
+            event_message="Second user's price condition triggered.",
+        )
+        db.add(second_event)
+        db.commit()
+
+        service = NotificationService(db)
+
+        first_notification = service.create_notification(
+            history_event_id=first_event.id,
+            notification_channel="EMAIL",
+        )
+        service.create_notification(
+            history_event_id=second_event.id,
+            notification_channel="EMAIL",
+        )
+
+        results = service.list_notifications(
+            user_id=first_user.id,
+            limit=20,
+            offset=0,
+        )
+
+        assert len(results) == 1
+        assert results[0].id == first_notification.id
+        assert results[0].history_event.task.user_id == first_user.id
+
+    finally:
+        db.query(User).filter(
+            User.email.in_([
+                "notification-service@example.com",
+                "notification-service-second@example.com",
+            ])
+        ).delete(synchronize_session=False)
+        db.commit()
+        db.close()
+
+
+def test_list_notifications_supports_limit_and_offset():
+    db = SessionLocal()
+
+    try:
+        user, _, _, _, history_event = create_test_data(db)
+        service = NotificationService(db)
+
+        created = [
+            service.create_notification(
+                history_event_id=history_event.id,
+                notification_channel=channel,
+            )
+            for channel in ("EMAIL", "BROWSER_PUSH", "EMAIL")
+        ]
+
+        results = service.list_notifications(
+            user_id=user.id,
+            limit=1,
+            offset=1,
+        )
+
+        assert len(results) == 1
+        assert results[0].id == sorted(
+            [item.id for item in created],
+            reverse=True,
+        )[1]
+
+    finally:
+        db.query(User).filter(
+            User.email == "notification-service@example.com"
+        ).delete(synchronize_session=False)
+        db.commit()
+        db.close()

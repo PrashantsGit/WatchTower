@@ -1,6 +1,9 @@
 import bcrypt
 import pytest
 from sqlalchemy import delete
+from app.models.notification_preference import (
+    NotificationPreference,
+)
 
 from app.database.session import SessionLocal
 from app.models.user import User
@@ -66,6 +69,53 @@ def test_register_user():
             b"testpassword",
             user.password_hash.encode("utf-8"),
         )
+
+        preference = (
+            db.query(NotificationPreference)
+            .filter(
+                NotificationPreference.user_id
+                == user.id
+            )
+            .first()
+        )
+
+        assert preference is not None
+        assert preference.email_enabled is True
+        assert preference.browser_push_enabled is True
+        assert preference.notify_on_price_change is True
+        assert preference.notify_on_stock_change is True
+
+    finally:
+        db.close()
+
+def test_register_user_creates_default_notification_preferences():
+    db = SessionLocal()
+
+    try:
+        service = AuthService(db)
+
+        user = service.register_user(
+            full_name="Preference User",
+            email="test@example.com",
+            password="testpassword",
+        )
+
+        preference = (
+            db.query(NotificationPreference)
+            .filter(
+                NotificationPreference.user_id
+                == user.id
+            )
+            .first()
+        )
+
+        assert preference is not None
+        assert preference.user_id == user.id
+
+        assert preference.email_enabled is True
+        assert preference.browser_push_enabled is True
+        assert preference.notify_on_price_change is True
+        assert preference.notify_on_stock_change is True
 
     finally:
         db.close()

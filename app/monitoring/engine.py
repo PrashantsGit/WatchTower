@@ -1,3 +1,7 @@
+
+import hashlib
+import json
+import logging
 from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
@@ -25,6 +29,11 @@ from app.services.history_event_service import HistoryEventService
 from app.services.monitoring_snapshot_service import (
     MonitoringSnapshotService,
 )
+from app.services.notification_decision_service import (
+    NotificationDecisionService,
+)
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -47,25 +56,22 @@ class MonitoringEngineService:
     ):
         self.db = db
         self.rule_repository = MonitoringRuleRepository(db)
-
         self.retriever = retriever or WebRetriever()
         self.extractor = extractor or MonitoringExtractor()
         self.evaluator = evaluator or MonitoringRuleEvaluator()
-
         self.trigger = MonitoringTriggerService()
         self.snapshot_service = MonitoringSnapshotService(db)
         self.history_event_service = HistoryEventService(db)
+        self.notification_decision_service = (
+            NotificationDecisionService(db)
+        )
 
     def _get_owned_task(
         self,
         task_id: int,
         user_id: int,
     ) -> MonitoringTask:
-
-        task = self.db.get(
-            MonitoringTask,
-            task_id,
-        )
+        task = self.db.get(MonitoringTask, task_id)
 
         if task is None or task.user_id != user_id:
             raise ResourceNotFoundError(
@@ -79,61 +85,37 @@ class MonitoringEngineService:
         task_id: int,
         user_id: int,
     ) -> list[MonitoringRule]:
-
-        task = self._get_owned_task(
-            task_id=task_id,
-            user_id=user_id,
-        )
+        task = self._get_owned_task(task_id, user_id)
 
         if not task.is_active:
             return []
 
-        rules = self.rule_repository.list_by_task(
-            task_id
-        )
-
-        return [
-            rule
-            for rule in rules
-            if rule.is_enabled
-        ]
+        rules = self.rule_repository.list_by_task(task_id)
+        return [rule for rule in rules if rule.is_enabled]
 
     def prepare_execution(
         self,
         task_id: int,
         user_id: int,
     ) -> MonitoringExecutionContext | None:
-
-        task = self._get_owned_task(
-            task_id=task_id,
-            user_id=user_id,
-        )
+        task = self._get_owned_task(task_id, user_id)
 
         if not task.is_active:
             return None
 
-        rules = self.rule_repository.list_by_task(
-            task_id
-        )
-
+        rules = self.rule_repository.list_by_task(task_id)
         executable_rules = [
-            rule
-            for rule in rules
-            if rule.is_enabled
+            rule for rule in rules if rule.is_enabled
         ]
 
         if not executable_rules:
             return None
 
-        page = self.retriever.retrieve(
-            task.target_url
-        )
-
+        page = self.retriever.retrieve(task.target_url)
         data = self.extractor.extract(
             page=page,
             rules=executable_rules,
         )
-
         evaluations = self.evaluator.evaluate_all(
             rules=executable_rules,
             data=data,
@@ -152,23 +134,17 @@ class MonitoringEngineService:
         task_id: int,
         user_id: int,
     ) -> MonitoringExecutionContext | None:
-
-        context = None
-
         try:
             context = self.prepare_execution(
                 task_id=task_id,
                 user_id=user_id,
             )
+        except ResourceNotFoundError:
+            raise
         except Exception:
-            task = self._get_owned_task(
-                task_id=task_id,
-                user_id=user_id,
-            )
-
-            if task is None:
-                return None
-
+            # Retrieval, extraction, or evaluation failures create
+            # a failed snapshot, but never a history event.
+            task = self._get_owned_task(task_id, user_id)
             self.snapshot_service.create_snapshot(
                 task_id=task.id,
                 user_id=user_id,
@@ -176,7 +152,10 @@ class MonitoringEngineService:
                 content_hash=self._calculate_content_hash({}),
                 execution_status="FAILED",
             )
-
+            logger.exception(
+                "Monitoring preparation failed for task %s",
+                task_id,
+            )
             return None
 
         if context is None:
@@ -206,7 +185,7 @@ class MonitoringEngineService:
         )
 
         # The first successful snapshot establishes the baseline.
-        # It does not create a history event.
+        # It does not create a history event or notification.
         if previous_snapshot is None:
             return context
 
@@ -219,7 +198,6 @@ class MonitoringEngineService:
                 rule=evaluation.rule,
                 snapshot_data=previous_snapshot.snapshot_data,
             )
-
             current_value = self._get_current_value(
                 rule=evaluation.rule,
                 data=context.data,
@@ -232,7 +210,7 @@ class MonitoringEngineService:
             ):
                 continue
 
-            self.history_event_service.create_event(
+            event = self.history_event_service.create_event(
                 task_id=context.task.id,
                 rule_id=evaluation.rule.id,
                 snapshot_id=snapshot.id,
@@ -249,22 +227,30 @@ class MonitoringEngineService:
                 ),
             )
 
+            # Notification persistence must not invalidate a
+            # successfully-created history event.
+            try:
+                self.notification_decision_service.create_notifications_for_event(
+                    event=event,
+                    user_id=user_id,
+                )
+            except Exception:
+                logger.exception(
+                    "Could not create notifications for history "
+                    "event %s (task %s)",
+                    event.id,
+                    context.task.id,
+                )
+
         return context
 
     @staticmethod
-    def _calculate_content_hash(
-        snapshot_data: dict,
-    ) -> str:
-
-        import hashlib
-        import json
-
+    def _calculate_content_hash(snapshot_data: dict) -> str:
         serialized = json.dumps(
             snapshot_data,
             sort_keys=True,
             separators=(",", ":"),
         )
-
         return hashlib.sha256(
             serialized.encode("utf-8")
         ).hexdigest()
@@ -274,7 +260,6 @@ class MonitoringEngineService:
         rule: MonitoringRule,
         snapshot_data: dict,
     ) -> str | None:
-
         rule_type = rule.rule_type.upper()
 
         if rule_type == "PRICE":
@@ -282,28 +267,17 @@ class MonitoringEngineService:
 
         if rule_type == "AVAILABILITY":
             value = snapshot_data.get("availability")
-
-            if value is None:
-                return None
-
-            return value.upper()
+            return None if value is None else value.upper()
 
         if rule_type == "KEYWORD":
             text = snapshot_data.get("text")
-
             if text is None:
                 return None
 
             keyword_present = (
-                rule.target_value.lower()
-                in text.lower()
+                rule.target_value.lower() in text.lower()
             )
-
-            return (
-                "PRESENT"
-                if keyword_present
-                else "ABSENT"
-            )
+            return "PRESENT" if keyword_present else "ABSENT"
 
         return None
 
@@ -312,32 +286,23 @@ class MonitoringEngineService:
         rule: MonitoringRule,
         data: ExtractedData,
     ) -> str | None:
-
         rule_type = rule.rule_type.upper()
 
         if rule_type == "PRICE":
             return data.price
 
         if rule_type == "AVAILABILITY":
-            if data.availability is None:
-                return None
-
-            return data.availability.upper()
+            value = data.availability
+            return None if value is None else value.upper()
 
         if rule_type == "KEYWORD":
             if data.text is None:
                 return None
 
             keyword_present = (
-                rule.target_value.lower()
-                in data.text.lower()
+                rule.target_value.lower() in data.text.lower()
             )
-
-            return (
-                "PRESENT"
-                if keyword_present
-                else "ABSENT"
-            )
+            return "PRESENT" if keyword_present else "ABSENT"
 
         return None
 
@@ -347,23 +312,8 @@ class MonitoringEngineService:
         previous_value: str | None,
         current_value: str | None,
     ) -> bool:
-
-        if previous_value is None:
+        if previous_value is None or current_value is None:
             return False
-
-        if current_value is None:
-            return False
-
-        rule_type = rule.rule_type.upper()
-
-        if rule_type == "PRICE":
-            return previous_value != current_value
-
-        if rule_type == "AVAILABILITY":
-            return previous_value != current_value
-
-        if rule_type == "KEYWORD":
-            return previous_value != current_value
 
         return previous_value != current_value
 
@@ -373,7 +323,6 @@ class MonitoringEngineService:
         previous_value: str | None = None,
         current_value: str | None = None,
     ) -> str:
-
         rule_type = rule_type.upper()
 
         if rule_type == "PRICE":
@@ -404,7 +353,6 @@ class MonitoringEngineService:
         rule_type: str,
         data: ExtractedData,
     ) -> str:
-
         rule_type = rule_type.upper()
 
         if rule_type == "PRICE":

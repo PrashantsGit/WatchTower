@@ -1227,3 +1227,141 @@ def test_execute_does_not_create_history_event_when_keyword_remains_present(
     )
 
     assert events == []
+
+
+def test_execute_requests_notifications_after_creating_history_event(
+    db,
+    task,
+):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    baseline_data = {
+        "price": "50000",
+        "availability": None,
+        "text": None,
+    }
+    baseline = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data=baseline_data,
+        content_hash=MonitoringEngineService._calculate_content_hash(
+            baseline_data
+        ),
+        execution_status="SUCCESS",
+        captured_at=datetime.now(timezone.utc) - timedelta(minutes=2),
+    )
+    db.add(baseline)
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="PRICE",
+        operator="<",
+        target_value="50000",
+        is_enabled=True,
+    )
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    retriever.retrieve.return_value = RetrievedPage(
+        url="https://example.com",
+        status_code=200,
+        html="<html>Example</html>",
+    )
+    extractor.extract.return_value = ExtractedData(
+        price="45000",
+    )
+    evaluator.evaluate_all.return_value = [
+        RuleEvaluationResult(rule=rule, matched=True)
+    ]
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+    service.notification_decision_service.create_notifications_for_event = (
+        Mock(return_value=[])
+    )
+
+    service.execute(task_id=task.id, user_id=41)
+
+    events = service.history_event_service.list_events(task.id)
+
+    assert len(events) == 1
+    service.notification_decision_service.create_notifications_for_event.assert_called_once()
+
+    call_kwargs = (
+        service.notification_decision_service
+        .create_notifications_for_event.call_args.kwargs
+    )
+    assert call_kwargs["event"].id == events[0].id
+    assert call_kwargs["user_id"] == 41
+
+
+def test_notification_failure_does_not_remove_history_event(
+    db,
+    task,
+):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    baseline_data = {
+        "price": "50000",
+        "availability": None,
+        "text": None,
+    }
+    baseline = MonitoringSnapshot(
+        task_id=task.id,
+        snapshot_data=baseline_data,
+        content_hash=MonitoringEngineService._calculate_content_hash(
+            baseline_data
+        ),
+        execution_status="SUCCESS",
+        captured_at=datetime.now(timezone.utc) - timedelta(minutes=2),
+    )
+    db.add(baseline)
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="PRICE",
+        operator="<",
+        target_value="50000",
+        is_enabled=True,
+    )
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    retriever.retrieve.return_value = RetrievedPage(
+        url="https://example.com",
+        status_code=200,
+        html="<html>Example</html>",
+    )
+    extractor.extract.return_value = ExtractedData(
+        price="45000",
+    )
+    evaluator.evaluate_all.return_value = [
+        RuleEvaluationResult(rule=rule, matched=True)
+    ]
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+    service.notification_decision_service.create_notifications_for_event = (
+        Mock(side_effect=RuntimeError("Notification persistence failed"))
+    )
+
+    context = service.execute(task_id=task.id, user_id=41)
+
+    assert context is not None
+    events = service.history_event_service.list_events(task.id)
+    assert len(events) == 1
+    assert events[0].previous_value == "50000"
+    assert events[0].current_value == "45000"

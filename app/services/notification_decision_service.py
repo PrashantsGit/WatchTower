@@ -1,3 +1,4 @@
+
 from app.models.history_event import HistoryEvent
 from app.models.notification import Notification
 from app.services.notification_preference_service import (
@@ -58,7 +59,11 @@ class NotificationDecisionService:
 
         event_type = event.event_type.upper()
 
-        if event_type == "PRICE_DROP":
+        if event_type in {
+            "PRICE_DROP",
+            "PRICE_INCREASE",
+            "PRICE_CHANGE",
+        }:
             return preference.notify_on_price_change
 
         if event_type in {

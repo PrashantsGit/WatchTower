@@ -3,7 +3,7 @@ import hashlib
 import json
 import logging
 from dataclasses import dataclass
-
+from decimal import Decimal, InvalidOperation
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import ResourceNotFoundError
@@ -317,6 +317,29 @@ class MonitoringEngineService:
 
         return previous_value != current_value
 
+    
+    @staticmethod
+    def _parse_event_price(
+        value: str | None,
+    ) -> Decimal | None:
+        if value is None:
+            return None
+
+        normalized = value.strip()
+
+        for symbol in ("₹", "$", "€", "£", ","):
+            normalized = normalized.replace(symbol, "")
+
+        normalized = normalized.strip()
+
+        if not normalized:
+            return None
+
+        try:
+            return Decimal(normalized)
+        except InvalidOperation:
+            return None
+
     @staticmethod
     def _get_event_type(
         rule_type: str,
@@ -326,7 +349,30 @@ class MonitoringEngineService:
         rule_type = rule_type.upper()
 
         if rule_type == "PRICE":
-            return "PRICE_DROP"
+            previous_price = (
+                MonitoringEngineService._parse_event_price(
+                    previous_value
+                )
+            )
+            current_price = (
+                MonitoringEngineService._parse_event_price(
+                    current_value
+                )
+            )
+
+            if (
+                previous_price is None
+                or current_price is None
+            ):
+                return "PRICE_CHANGE"
+
+            if current_price < previous_price:
+                return "PRICE_DROP"
+
+            if current_price > previous_price:
+                return "PRICE_INCREASE"
+
+            return "PRICE_CHANGE"
 
         if rule_type == "AVAILABILITY":
             if (
@@ -347,6 +393,7 @@ class MonitoringEngineService:
             return "KEYWORD_DETECTED"
 
         return "RULE_TRIGGERED"
+
 
     @staticmethod
     def _get_event_message(

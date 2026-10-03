@@ -1365,3 +1365,28 @@ def test_notification_failure_does_not_remove_history_event(
     assert len(events) == 1
     assert events[0].previous_value == "50000"
     assert events[0].current_value == "45000"
+
+
+
+@pytest.mark.parametrize(
+    ("previous", "current", "expected"),
+    [
+        ("50000", "45000", "PRICE_DROP"),
+        ("45000", "50000", "PRICE_INCREASE"),
+        ("₹1,200.00", "₹1,100.00", "PRICE_DROP"),
+        ("£51.77", "£55.00", "PRICE_INCREASE"),
+        ("45000", "45000", "PRICE_CHANGE"),
+        ("invalid", "50000", "PRICE_CHANGE"),
+        (None, "50000", "PRICE_CHANGE"),
+    ],
+)
+def test_get_event_type_classifies_price_direction(
+    previous,
+    current,
+    expected,
+):
+    assert MonitoringEngineService._get_event_type(
+        rule_type="PRICE",
+        previous_value=previous,
+        current_value=current,
+    ) == expected

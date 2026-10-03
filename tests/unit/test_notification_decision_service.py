@@ -473,3 +473,48 @@ def test_notification_decision_enforces_user_preferences_ownership():
         )
         db.commit()
         db.close()
+
+
+@pytest.mark.parametrize(
+    "event_type",
+    [
+        "PRICE_DROP",
+        "PRICE_INCREASE",
+        "PRICE_CHANGE",
+    ],
+)
+def test_all_price_event_types_respect_price_notification_preference(
+    event_type,
+):
+    preference = type(
+        "Preference",
+        (),
+        {
+            "notify_on_price_change": True,
+            "notify_on_stock_change": True,
+        },
+    )()
+
+    event = type(
+        "Event",
+        (),
+        {"event_type": event_type},
+    )()
+
+    assert (
+        NotificationDecisionService._should_notify_for_event(
+            event=event,
+            preference=preference,
+        )
+        is True
+    )
+
+    preference.notify_on_price_change = False
+
+    assert (
+        NotificationDecisionService._should_notify_for_event(
+            event=event,
+            preference=preference,
+        )
+        is False
+    )

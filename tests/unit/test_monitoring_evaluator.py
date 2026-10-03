@@ -353,3 +353,67 @@ def test_evaluate_all_returns_results_for_all_rules():
     assert len(results) == 2
     assert results[0].matched is True
     assert results[1].matched is True
+
+
+def test_price_rule_handles_currency_symbol():
+    evaluator = MonitoringRuleEvaluator()
+
+    rule = create_rule(
+        rule_type="PRICE",
+        operator="<",
+        target_value="60",
+    )
+
+    data = ExtractedData(price="£51.77")
+
+    result = evaluator.evaluate(rule=rule, data=data)
+
+    assert result.matched is True
+
+
+def test_price_rule_handles_comma_separators():
+    evaluator = MonitoringRuleEvaluator()
+
+    rule = create_rule(
+        rule_type="PRICE",
+        operator="<=",
+        target_value="1,300.00",
+    )
+
+    data = ExtractedData(price="₹1,299.00")
+
+    result = evaluator.evaluate(rule=rule, data=data)
+
+    assert result.matched is True
+
+
+def test_price_rule_handles_equal_currency_values():
+    evaluator = MonitoringRuleEvaluator()
+
+    rule = create_rule(
+        rule_type="PRICE",
+        operator="==",
+        target_value="49.99",
+    )
+
+    data = ExtractedData(price="$49.99")
+
+    result = evaluator.evaluate(rule=rule, data=data)
+
+    assert result.matched is True
+
+
+def test_price_rule_rejects_malformed_price():
+    evaluator = MonitoringRuleEvaluator()
+
+    rule = create_rule(
+        rule_type="PRICE",
+        operator="<",
+        target_value="60",
+    )
+
+    data = ExtractedData(price="not-a-price")
+
+    result = evaluator.evaluate(rule=rule, data=data)
+
+    assert result.matched is False

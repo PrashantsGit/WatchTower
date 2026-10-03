@@ -1,4 +1,6 @@
+
 from dataclasses import dataclass
+import re
 
 from app.models.monitoring_rule import MonitoringRule
 from app.monitoring.extractor import ExtractedData
@@ -66,19 +68,36 @@ class MonitoringRuleEvaluator:
             for rule in rules
         ]
 
+    @staticmethod
+    def _parse_price(value: str | None) -> float | None:
+        if value is None:
+            return None
+
+        normalized = value.strip().replace(",", "")
+
+        # Accept an optional leading currency symbol and whitespace.
+        pattern = r"[₹$€£]?\s*[+-]?(?:\d+(?:\.\d*)?|\.\d+)"
+
+        if not re.fullmatch(pattern, normalized):
+            return None
+
+        normalized = re.sub(r"^[₹$€£]\s*", "", normalized)
+
+        try:
+            return float(normalized)
+        except (TypeError, ValueError):
+            return None
+
     def _evaluate_price(
         self,
         rule: MonitoringRule,
         data: ExtractedData,
     ) -> bool:
 
-        if data.price is None:
-            return False
+        current_price = self._parse_price(data.price)
+        target_price = self._parse_price(rule.target_value)
 
-        try:
-            current_price = float(data.price)
-            target_price = float(rule.target_value)
-        except (TypeError, ValueError):
+        if current_price is None or target_price is None:
             return False
 
         operators = {
@@ -89,9 +108,7 @@ class MonitoringRuleEvaluator:
             ">": lambda: current_price > target_price,
         }
 
-        evaluator = operators.get(
-            rule.operator
-        )
+        evaluator = operators.get(rule.operator)
 
         if evaluator is None:
             return False

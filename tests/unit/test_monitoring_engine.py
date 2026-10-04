@@ -1390,3 +1390,139 @@ def test_get_event_type_classifies_price_direction(
         previous_value=previous,
         current_value=current,
     ) == expected
+
+
+
+def test_execute_classifies_price_increase_correctly(db, task):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    baseline_data = {
+        "price": "45000",
+        "availability": None,
+        "text": None,
+    }
+    db.add(
+        MonitoringSnapshot(
+            task_id=task.id,
+            snapshot_data=baseline_data,
+            content_hash=MonitoringEngineService._calculate_content_hash(
+                baseline_data
+            ),
+            execution_status="SUCCESS",
+            captured_at=datetime.now(timezone.utc) - timedelta(minutes=2),
+        )
+    )
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="PRICE",
+        operator="<",
+        target_value="60000",
+        is_enabled=True,
+    )
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    retriever.retrieve.return_value = RetrievedPage(
+        url="https://example.com",
+        status_code=200,
+        html="<html>Example</html>",
+    )
+    extractor.extract.return_value = ExtractedData(price="50000")
+    evaluator.evaluate_all.return_value = [
+        RuleEvaluationResult(rule=rule, matched=True)
+    ]
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+
+    service.execute(task_id=task.id, user_id=41)
+
+    events = service.history_event_service.list_events(task.id)
+
+    assert len(events) == 1
+    assert events[0].event_type == "PRICE_INCREASE"
+    assert events[0].previous_value == "45000"
+    assert events[0].current_value == "50000"
+
+
+@pytest.mark.parametrize(
+    ("previous", "current", "expected_event"),
+    [
+        ("OUT_OF_STOCK", "IN_STOCK", "STOCK_AVAILABLE"),
+        ("IN_STOCK", "OUT_OF_STOCK", "STOCK_UNAVAILABLE"),
+    ],
+)
+def test_execute_classifies_stock_transitions_correctly(
+    db,
+    task,
+    previous,
+    current,
+    expected_event,
+):
+    retriever = Mock()
+    extractor = Mock()
+    evaluator = Mock()
+
+    baseline_data = {
+        "price": None,
+        "availability": previous,
+        "text": None,
+    }
+    db.add(
+        MonitoringSnapshot(
+            task_id=task.id,
+            snapshot_data=baseline_data,
+            content_hash=MonitoringEngineService._calculate_content_hash(
+                baseline_data
+            ),
+            execution_status="SUCCESS",
+            captured_at=datetime.now(timezone.utc) - timedelta(minutes=2),
+        )
+    )
+
+    rule = MonitoringRule(
+        task_id=task.id,
+        rule_type="AVAILABILITY",
+        operator="=",
+        target_value=current,
+        is_enabled=True,
+    )
+    db.add(rule)
+    db.commit()
+    db.refresh(rule)
+
+    retriever.retrieve.return_value = RetrievedPage(
+        url="https://example.com",
+        status_code=200,
+        html="<html>Example</html>",
+    )
+    extractor.extract.return_value = ExtractedData(
+        availability=current
+    )
+    evaluator.evaluate_all.return_value = [
+        RuleEvaluationResult(rule=rule, matched=True)
+    ]
+
+    service = MonitoringEngineService(
+        db,
+        retriever=retriever,
+        extractor=extractor,
+        evaluator=evaluator,
+    )
+
+    service.execute(task_id=task.id, user_id=41)
+
+    events = service.history_event_service.list_events(task.id)
+
+    assert len(events) == 1
+    assert events[0].event_type == expected_event
+    assert events[0].previous_value == previous
+    assert events[0].current_value == current

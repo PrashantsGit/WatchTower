@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from datetime import datetime, timezone
 
 from app.models.monitoring_task import MonitoringTask
 from app.repositories.monitoring_task_repository import MonitoringTaskRepository
@@ -25,6 +26,7 @@ class MonitoringTaskService:
             target_url=target_url.strip(),
             check_interval=check_interval,
             is_active=True,
+            next_execution_at=datetime.now(timezone.utc),
         )
 
         try:

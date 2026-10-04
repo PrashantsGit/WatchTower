@@ -1,3 +1,4 @@
+
 from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock
 
@@ -32,31 +33,34 @@ def create_task(
 
 def cleanup_tasks(db, *tasks):
     for task in tasks:
-        db.delete(task)
+        if task is not None:
+            db.delete(task)
 
     db.commit()
 
 
+def make_scheduler(db, engine, due_tasks):
+    """Create a scheduler isolated from unrelated database tasks."""
+    scheduler = SchedulerService(db=db, engine=engine)
+    scheduler.repository.list_due_active_tasks = Mock(
+        return_value=due_tasks
+    )
+    return scheduler
+
+
 def test_scheduler_executes_active_due_task():
     db = SessionLocal()
-
     task = None
 
     try:
         now = datetime.now(timezone.utc)
-
         task = create_task(
             db,
             next_execution_at=now - timedelta(minutes=1),
         )
-
         engine = Mock()
 
-        scheduler = SchedulerService(
-            db=db,
-            engine=engine,
-        )
-
+        scheduler = make_scheduler(db, engine, [task])
         scheduler.run_pending()
 
         engine.execute.assert_called_once_with(
@@ -65,78 +69,59 @@ def test_scheduler_executes_active_due_task():
         )
 
     finally:
-        if task is not None:
-            cleanup_tasks(db, task)
-
+        cleanup_tasks(db, task)
         db.close()
 
 
 def test_scheduler_does_not_execute_future_task():
     db = SessionLocal()
-
     task = None
 
     try:
         now = datetime.now(timezone.utc)
-
         task = create_task(
             db,
             next_execution_at=now + timedelta(minutes=5),
         )
-
         engine = Mock()
 
-        scheduler = SchedulerService(
-            db=db,
-            engine=engine,
-        )
-
+        # No eligible tasks should be returned for this test.
+        scheduler = make_scheduler(db, engine, [])
         scheduler.run_pending()
 
         engine.execute.assert_not_called()
 
     finally:
-        if task is not None:
-            cleanup_tasks(db, task)
-
+        cleanup_tasks(db, task)
         db.close()
 
 
 def test_scheduler_does_not_execute_inactive_task():
     db = SessionLocal()
-
     task = None
 
     try:
         now = datetime.now(timezone.utc)
-
         task = create_task(
             db,
             is_active=False,
             next_execution_at=now - timedelta(minutes=1),
         )
-
         engine = Mock()
 
-        scheduler = SchedulerService(
-            db=db,
-            engine=engine,
-        )
-
+        # No eligible tasks should be returned for this test.
+        scheduler = make_scheduler(db, engine, [])
         scheduler.run_pending()
 
         engine.execute.assert_not_called()
 
     finally:
-        if task is not None:
-            cleanup_tasks(db, task)
-
+        cleanup_tasks(db, task)
         db.close()
 
 
 def test_scheduler_executes_all_due_tasks():
     db = SessionLocal()
-
     task_one = None
     task_two = None
 
@@ -147,28 +132,24 @@ def test_scheduler_executes_all_due_tasks():
             db,
             next_execution_at=now - timedelta(minutes=2),
         )
-
         task_two = create_task(
             db,
             next_execution_at=now - timedelta(minutes=1),
         )
 
         engine = Mock()
-
-        scheduler = SchedulerService(
-            db=db,
-            engine=engine,
+        scheduler = make_scheduler(
+            db,
+            engine,
+            [task_one, task_two],
         )
-
         scheduler.run_pending()
 
         assert engine.execute.call_count == 2
-
         engine.execute.assert_any_call(
             task_id=task_one.id,
             user_id=task_one.user_id,
         )
-
         engine.execute.assert_any_call(
             task_id=task_two.id,
             user_id=task_two.user_id,
@@ -181,7 +162,6 @@ def test_scheduler_executes_all_due_tasks():
 
 def test_scheduler_continues_when_one_task_fails():
     db = SessionLocal()
-
     task_one = None
     task_two = None
 
@@ -192,7 +172,6 @@ def test_scheduler_continues_when_one_task_fails():
             db,
             next_execution_at=now - timedelta(minutes=2),
         )
-
         task_two = create_task(
             db,
             next_execution_at=now - timedelta(minutes=1),
@@ -206,20 +185,18 @@ def test_scheduler_continues_when_one_task_fails():
 
         engine.execute.side_effect = execute
 
-        scheduler = SchedulerService(
-            db=db,
-            engine=engine,
+        scheduler = make_scheduler(
+            db,
+            engine,
+            [task_one, task_two],
         )
-
         scheduler.run_pending()
 
         assert engine.execute.call_count == 2
-
         engine.execute.assert_any_call(
             task_id=task_one.id,
             user_id=task_one.user_id,
         )
-
         engine.execute.assert_any_call(
             task_id=task_two.id,
             user_id=task_two.user_id,
@@ -232,24 +209,17 @@ def test_scheduler_continues_when_one_task_fails():
 
 def test_scheduler_updates_execution_times_after_success():
     db = SessionLocal()
-
     task = None
 
     try:
         now = datetime.now(timezone.utc)
-
         task = create_task(
             db,
             next_execution_at=now - timedelta(minutes=1),
         )
-
         engine = Mock()
 
-        scheduler = SchedulerService(
-            db=db,
-            engine=engine,
-        )
-
+        scheduler = make_scheduler(db, engine, [task])
         scheduler.run_pending()
 
         db.refresh(task)
@@ -262,42 +232,31 @@ def test_scheduler_updates_execution_times_after_success():
             task.last_checked_at
             + timedelta(minutes=task.check_interval)
         )
-
         assert task.next_execution_at == expected_next_execution
 
     finally:
-        if task is not None:
-            cleanup_tasks(db, task)
-
+        cleanup_tasks(db, task)
         db.close()
 
 
 def test_scheduler_does_not_update_failed_task_schedule():
     db = SessionLocal()
-
     task = None
 
     try:
         now = datetime.now(timezone.utc)
-
         original_next_execution = now - timedelta(minutes=1)
 
         task = create_task(
             db,
             next_execution_at=original_next_execution,
         )
-
         engine = Mock()
-
         engine.execute.side_effect = Exception(
             "Monitoring execution failed"
         )
 
-        scheduler = SchedulerService(
-            db=db,
-            engine=engine,
-        )
-
+        scheduler = make_scheduler(db, engine, [task])
         scheduler.run_pending()
 
         db.refresh(task)
@@ -306,15 +265,12 @@ def test_scheduler_does_not_update_failed_task_schedule():
         assert task.next_execution_at == original_next_execution
 
     finally:
-        if task is not None:
-            cleanup_tasks(db, task)
-
+        cleanup_tasks(db, task)
         db.close()
 
 
 def test_scheduler_failure_does_not_prevent_other_task_from_rescheduling():
     db = SessionLocal()
-
     task_one = None
     task_two = None
 
@@ -325,7 +281,6 @@ def test_scheduler_failure_does_not_prevent_other_task_from_rescheduling():
             db,
             next_execution_at=now - timedelta(minutes=2),
         )
-
         task_two = create_task(
             db,
             next_execution_at=now - timedelta(minutes=1),
@@ -339,11 +294,11 @@ def test_scheduler_failure_does_not_prevent_other_task_from_rescheduling():
 
         engine.execute.side_effect = execute
 
-        scheduler = SchedulerService(
-            db=db,
-            engine=engine,
+        scheduler = make_scheduler(
+            db,
+            engine,
+            [task_one, task_two],
         )
-
         scheduler.run_pending()
 
         db.refresh(task_one)

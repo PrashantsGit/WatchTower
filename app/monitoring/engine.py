@@ -116,6 +116,10 @@ class MonitoringEngineService:
             page=page,
             rules=executable_rules,
         )
+        self._validate_extracted_data(
+            rules=executable_rules,
+            data=data,
+        )
         evaluations = self.evaluator.evaluate_all(
             rules=executable_rules,
             data=data,
@@ -243,6 +247,35 @@ class MonitoringEngineService:
                 )
 
         return context
+
+    @staticmethod
+    def _validate_extracted_data(
+        rules: list[MonitoringRule],
+        data: ExtractedData,
+    ) -> None:
+        for rule in rules:
+            if not rule.is_enabled:
+                continue
+
+            rule_type = rule.rule_type.upper()
+
+            if rule_type == "PRICE" and data.price is None:
+                raise ValueError(
+                    "Required price could not be extracted."
+                )
+
+            if (
+                rule_type == "AVAILABILITY"
+                and data.availability is None
+            ):
+                raise ValueError(
+                    "Required availability could not be extracted."
+                )
+
+            if rule_type == "KEYWORD" and data.text is None:
+                raise ValueError(
+                    "Required page text could not be extracted."
+                )
 
     @staticmethod
     def _calculate_content_hash(snapshot_data: dict) -> str:

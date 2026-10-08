@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.history_event import HistoryEvent
+from app.models.monitoring_task import MonitoringTask
 
 
 class HistoryEventRepository:
@@ -39,7 +40,64 @@ class HistoryEventRepository:
             )
             .order_by(
                 HistoryEvent.detected_at.desc(),
+                HistoryEvent.id.desc(),
             )
+        )
+
+        return list(
+            self.db.scalars(statement).all()
+        )
+
+    def list_for_user(
+        self,
+        user_id: int,
+        limit: int,
+        offset: int,
+    ) -> list[HistoryEvent]:
+        statement = (
+            select(HistoryEvent)
+            .join(
+                MonitoringTask,
+                MonitoringTask.id == HistoryEvent.task_id,
+            )
+            .where(
+                MonitoringTask.user_id == user_id,
+            )
+            .order_by(
+                HistoryEvent.detected_at.desc(),
+                HistoryEvent.id.desc(),
+            )
+            .offset(offset)
+            .limit(limit)
+        )
+
+        return list(
+            self.db.scalars(statement).all()
+        )
+
+    def list_by_task_for_user(
+        self,
+        task_id: int,
+        user_id: int,
+        limit: int,
+        offset: int,
+    ) -> list[HistoryEvent]:
+        statement = (
+            select(HistoryEvent)
+            .join(
+                MonitoringTask,
+                MonitoringTask.id == HistoryEvent.task_id,
+            )
+            .where(
+                HistoryEvent.task_id == task_id,
+                MonitoringTask.user_id == user_id,
+            )
+            .order_by(
+                HistoryEvent.detected_at.desc(),
+                HistoryEvent.id.desc(),
+            )
+            .offset(offset)
+            .limit(limit)
         )
 
         return list(

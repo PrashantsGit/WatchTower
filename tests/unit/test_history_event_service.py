@@ -175,3 +175,128 @@ def test_get_history_event_rejects_wrong_task():
             db.commit()
 
         db.close()
+
+def test_list_history_events_for_user():
+    db = SessionLocal()
+
+    user = None
+
+    try:
+        user, task, rule, snapshot = create_test_data(db)
+
+        service = HistoryEventService(db)
+
+        event = service.create_event(
+            task_id=task.id,
+            rule_id=rule.id,
+            snapshot_id=snapshot.id,
+            event_type="PRICE_DROP",
+            previous_value="50000",
+            current_value="45000",
+            event_message="Price dropped.",
+        )
+
+        events = service.list_events_for_user(
+            user_id=user.id,
+            limit=20,
+            offset=0,
+        )
+
+        event_ids = [item.id for item in events]
+
+        assert event.id in event_ids
+
+    finally:
+        if user is not None:
+            db.delete(user)
+            db.commit()
+
+        db.close()
+
+
+def test_list_history_events_for_task():
+    db = SessionLocal()
+
+    user = None
+
+    try:
+        user, task, rule, snapshot = create_test_data(db)
+
+        service = HistoryEventService(db)
+
+        event = service.create_event(
+            task_id=task.id,
+            rule_id=rule.id,
+            snapshot_id=snapshot.id,
+            event_type="STOCK_AVAILABLE",
+            previous_value="OUT_OF_STOCK",
+            current_value="IN_STOCK",
+            event_message="Product is available.",
+        )
+
+        events = service.list_events_for_task(
+            task_id=task.id,
+            user_id=user.id,
+            limit=20,
+            offset=0,
+        )
+
+        assert len(events) == 1
+        assert events[0].id == event.id
+
+    finally:
+        if user is not None:
+            db.delete(user)
+            db.commit()
+
+        db.close()
+
+
+def test_list_history_events_for_task_rejects_other_user():
+    db = SessionLocal()
+
+    user = None
+
+    try:
+        user, task, rule, snapshot = create_test_data(db)
+
+        service = HistoryEventService(db)
+
+        with pytest.raises(
+            ResourceNotFoundError,
+            match="Monitoring task not found",
+        ):
+            service.list_events_for_task(
+                task_id=task.id,
+                user_id=999999,
+                limit=20,
+                offset=0,
+            )
+
+    finally:
+        if user is not None:
+            db.delete(user)
+            db.commit()
+
+        db.close()
+
+
+def test_list_history_events_for_task_rejects_missing_task():
+    db = SessionLocal()
+
+    try:
+        service = HistoryEventService(db)
+
+        with pytest.raises(
+            ResourceNotFoundError,
+            match="Monitoring task not found",
+        ):
+            service.list_events_for_task(
+                task_id=999999,
+                user_id=999999,
+                limit=20,
+                offset=0,
+            )
+
+    finally:
+        db.close()

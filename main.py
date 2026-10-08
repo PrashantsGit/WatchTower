@@ -19,6 +19,7 @@ from app.core.exceptions import (
     RuleLimitExceededError,
 )
 from app.scheduler.runner import SchedulerRunner
+from app.api.routes.history import router as history_router
 
 
 scheduler_runner = SchedulerRunner()
@@ -58,6 +59,11 @@ app.add_exception_handler(
 
 app.include_router(
     auth_router,
+    prefix="/api",
+)
+
+app.include_router(
+    history_router,
     prefix="/api",
 )
 

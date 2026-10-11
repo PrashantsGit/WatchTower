@@ -21,6 +21,7 @@ from app.core.exceptions import (
 from app.scheduler.runner import SchedulerRunner
 from app.api.routes.history import router as history_router
 from app.api.routes.dashboard import router as dashboard_router
+from app.api.routes import users
 
 
 scheduler_runner = SchedulerRunner()
@@ -96,5 +97,9 @@ app.include_router(
 )
 app.include_router(
     dashboard_router,
+    prefix="/api"
+)
+app.include_router(
+    users.router,
     prefix="/api"
 )

@@ -20,6 +20,7 @@ from app.core.exceptions import (
 )
 from app.scheduler.runner import SchedulerRunner
 from app.api.routes.history import router as history_router
+from app.api.routes.dashboard import router as dashboard_router
 
 
 scheduler_runner = SchedulerRunner()
@@ -92,4 +93,8 @@ app.add_middleware(
 app.include_router(
     notifications_router,
     prefix="/api",
+)
+app.include_router(
+    dashboard_router,
+    prefix="/api"
 )

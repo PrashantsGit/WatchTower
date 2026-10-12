@@ -1,4 +1,6 @@
+
 from datetime import datetime, timedelta, timezone
+from uuid import uuid4
 
 import bcrypt
 import jwt
@@ -32,6 +34,7 @@ def create_access_token(user_id: int) -> str:
     payload = {
         "sub": str(user_id),
         "exp": expire,
+        "jti": uuid4().hex,
     }
 
     return jwt.encode(

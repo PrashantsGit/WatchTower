@@ -284,6 +284,39 @@ Required.
 | `200 OK` | User information retrieved. |
 | `401 Unauthorized` | Invalid or missing token. |
 
+## 3.4 Session Termination
+
+### POST `/api/auth/logout`
+
+**Purpose:** Terminate the current authenticated session by revoking the access token used for the request.
+
+**Authentication:** Required — Bearer JWT.
+
+**Request Headers**
+```http
+Authorization: Bearer <access_token>
+```
+
+**Request Body:** None.
+
+**Success Response — `200 OK`**
+```json
+{
+  "message": "Logged out successfully."
+}
+```
+
+**Error Responses**
+- `401 Unauthorized` — Missing, invalid, expired, or revoked access token.
+
+**Behavior**
+1. The system shall revoke the access token associated with the current request.
+2. The revoked token shall no longer grant access to protected resources.
+3. Logout shall be idempotent from the client's perspective: once the token is revoked, it cannot be used to authenticate further requests.
+4. Logging out shall not revoke tokens belonging to other active sessions.
+
+**Implementation Note:** The token revocation mechanism and its persistence requirements are defined in the Database Design Document.
+
 ---
 
 # 4. Monitoring Task API

@@ -106,7 +106,7 @@ The database is designed to provide reliable, consistent, and efficient storage 
 
 ---
 
-# 2.1 Database Overview
+## 2.1 Database Overview
 
 WatchTower uses a relational database management system (RDBMS) as the persistent storage layer.
 
@@ -116,7 +116,7 @@ The persistence layer remains independent of the business layer through the Repo
 
 ---
 
-# 2.2 Database Architecture
+## 2.2 Database Architecture
 
 The following diagram illustrates how the database fits within the overall application architecture.
 
@@ -160,7 +160,7 @@ This architecture ensures that persistence concerns remain isolated from busines
 
 ---
 
-# 2.3 Database Responsibilities
+## 2.3 Database Responsibilities
 
 The database is responsible for the following functions:
 
@@ -176,7 +176,7 @@ Business rules and application workflows remain the responsibility of the Busine
 
 ---
 
-# 2.4 Persistence Model
+## 2.4 Persistence Model
 
 WatchTower adopts a normalized relational data model.
 
@@ -184,7 +184,7 @@ Each major business concept is represented by an independent table with clearly 
 
 The database schema is designed to minimize redundancy while maintaining efficient query performance.
 
-## Persistence Model
+### Persistence Model
 
 ```mermaid
 flowchart LR
@@ -215,6 +215,8 @@ USER --> PREF
 
 EVENT --> NOTIFY
 ```
+flowchart LR
+    AUTH[Authentication Service] -. "revocation lookup" .-> REVOKED[(revoked_tokens)]
 
 ### Persistence Characteristics
 
@@ -225,7 +227,7 @@ EVENT --> NOTIFY
 
 ---
 
-# 2.5 Database Access Strategy
+## 2.5 Database Access Strategy
 
 Database access follows a single controlled pathway.
 
@@ -256,7 +258,7 @@ PostgreSQL
 
 ---
 
-# 2.6 Database Characteristics
+## 2.6 Database Characteristics
 
 The WatchTower database exhibits the following architectural characteristics.
 
@@ -290,7 +292,7 @@ The schema allows future entities and relationships to be introduced without sig
 
 ---
 
-# 2.7 Architectural Decisions
+## 2.7 Architectural Decisions
 
 | ID | Decision | Rationale |
 |----|----------|-----------|
@@ -320,7 +322,7 @@ All database objects, relationships, and constraints defined in subsequent chapt
 
 ---
 
-# 3.1 Design Objectives
+## 3.1 Design Objectives
 
 The database has been designed to satisfy the following objectives:
 
@@ -334,7 +336,7 @@ The database has been designed to satisfy the following objectives:
 
 ---
 
-# 3.2 Normalization
+## 3.2 Normalization
 
 The database schema follows normalization principles to reduce redundancy and maintain data consistency.
 
@@ -352,7 +354,7 @@ Where appropriate, limited denormalization may be introduced in future versions 
 
 ---
 
-# 3.3 Data Integrity
+## 3.3 Data Integrity
 
 Data integrity is maintained through multiple mechanisms.
 
@@ -384,7 +386,7 @@ The database shall enforce only those rules necessary to preserve structural con
 
 ---
 
-# 3.4 Consistency Principles
+## 3.4 Consistency Principles
 
 The following principles govern database consistency.
 
@@ -397,7 +399,7 @@ The following principles govern database consistency.
 
 ---
 
-# 3.5 Data Separation
+## 3.5 Data Separation
 
 The database distinguishes between different categories of data.
 
@@ -412,7 +414,7 @@ Separating these categories improves maintainability and enables independent ret
 
 ---
 
-# 3.6 Schema Modularity
+## 3.6 Schema Modularity
 
 Each table represents a single business concept.
 
@@ -425,7 +427,7 @@ The schema has been organized to ensure that:
 
 ---
 
-# 3.7 Architectural Decisions
+## 3.7 Architectural Decisions
 
 | ID | Decision | Rationale |
 |----|----------|-----------|
@@ -478,6 +480,7 @@ Database tables shall use **plural nouns**.
 | History Event | `history_events` |
 | Notification Preference | `notification_preferences` |
 | Notification | `notifications` |
+| Revoked Token | `revoked_tokens` |
 
 ---
 
@@ -808,12 +811,13 @@ The tables are documented in dependency order to improve readability and to clea
 | `history_events` | Stores permanent records of detected changes. |
 | `notification_preferences` | Stores user notification configuration. |
 | `notifications` | Stores generated notification records. |
+| `revoked_tokens` | Stores revoked JWT identifiers to prevent further authentication with logged-out tokens. |
 
 ---
 
-# 7.2 users
+## 7.2 users
 
-## Purpose
+### Purpose
 
 The `users` table stores account information for every registered user of WatchTower. It serves as the root entity for all user-owned data and is referenced by multiple tables throughout the database.
 
@@ -821,7 +825,7 @@ Each user represents an independent monitoring workspace with isolated monitorin
 
 ---
 
-## Schema Definition
+### Schema Definition
 
 | Column | Type | PK | FK | Nullable | Default | Description |
 |---------|------|:--:|:--:|:--------:|---------|-------------|
@@ -836,13 +840,13 @@ Each user represents an independent monitoring workspace with isolated monitorin
 
 ---
 
-## Constraints
+### Constraints
 
-### Primary Key
+#### Primary Key
 
 - `pk_users`
 
-### Unique Constraints
+#### Unique Constraints
 
 - Email address must be unique.
 
@@ -850,13 +854,13 @@ Each user represents an independent monitoring workspace with isolated monitorin
 uq_users_email
 ```
 
-### Check Constraints
+#### Check Constraints
 
 - None
 
 ---
 
-## Relationships
+### Relationships
 
 | Related Table | Relationship | Description |
 |---------------|--------------|-------------|
@@ -865,7 +869,7 @@ uq_users_email
 
 ---
 
-## Indexes
+### Indexes
 
 | Index | Columns | Purpose |
 |--------|---------|---------|
@@ -874,7 +878,7 @@ uq_users_email
 
 ---
 
-## Design Notes
+### Design Notes
 
 - Email addresses are used as the primary login identifier.
 - Passwords are never stored in plaintext.
@@ -884,9 +888,9 @@ uq_users_email
 
 ---
 
-# 7.3 monitoring_tasks
+## 7.3 monitoring_tasks
 
-## Purpose
+### Purpose
 
 The `monitoring_tasks` table stores the monitoring configurations created by users. Each record represents a single monitoring task that defines *what* should be monitored, *where* it should be monitored, and *when* monitoring should occur.
 
@@ -894,7 +898,7 @@ This table serves as the central entity of the monitoring domain and acts as the
 
 ---
 
-## Schema Definition
+### Schema Definition
 
 | Column | Type | PK | FK | Nullable | Default | Description |
 |---------|------|----|----|----------|---------|-------------|
@@ -912,7 +916,7 @@ This table serves as the central entity of the monitoring domain and acts as the
 
 ---
 
-## Constraints
+### Constraints
 
 | Type | Name |
 |------|------|
@@ -921,7 +925,7 @@ This table serves as the central entity of the monitoring domain and acts as the
 
 ---
 
-## References
+### References
 
 | Column | References |
 |---------|------------|
@@ -929,7 +933,7 @@ This table serves as the central entity of the monitoring domain and acts as the
 
 ---
 
-## Referenced By
+### Referenced By
 
 | Table | Foreign Key |
 |---------|-------------|
@@ -939,7 +943,7 @@ This table serves as the central entity of the monitoring domain and acts as the
 
 ---
 
-## Indexes
+### Indexes
 
 | Index | Columns | Purpose |
 |---------|----------|----------|
@@ -949,7 +953,7 @@ This table serves as the central entity of the monitoring domain and acts as the
 
 ---
 
-## Design Notes
+### Design Notes
 
 - Each monitoring task belongs to exactly one user.
 - The `next_execution_at` column is used by the scheduler to determine execution order.
@@ -958,9 +962,9 @@ This table serves as the central entity of the monitoring domain and acts as the
 
 ---
 
-# 7.4 monitoring_rules
+## 7.4 monitoring_rules
 
-## Purpose
+### Purpose
 
 The `monitoring_rules` table stores the monitoring conditions associated with a monitoring task. Each rule defines a specific condition that is evaluated during every monitoring cycle to determine whether a meaningful change has occurred.
 
@@ -968,7 +972,7 @@ A monitoring task may contain multiple rules, allowing users to monitor differen
 
 ---
 
-## Schema Definition
+### Schema Definition
 
 | Column | Type | PK | FK | Nullable | Default | Description |
 |---------|------|----|----|----------|---------|-------------|
@@ -983,7 +987,7 @@ A monitoring task may contain multiple rules, allowing users to monitor differen
 
 ---
 
-## Constraints
+### Constraints
 
 | Type | Name |
 |------|------|
@@ -992,7 +996,7 @@ A monitoring task may contain multiple rules, allowing users to monitor differen
 
 ---
 
-## References
+### References
 
 | Column | References |
 |---------|------------|
@@ -1000,7 +1004,7 @@ A monitoring task may contain multiple rules, allowing users to monitor differen
 
 ---
 
-## Referenced By
+### Referenced By
 
 | Table | Foreign Key |
 |---------|-------------|
@@ -1008,7 +1012,7 @@ A monitoring task may contain multiple rules, allowing users to monitor differen
 
 ---
 
-## Indexes
+### Indexes
 
 | Index | Columns | Purpose |
 |---------|----------|----------|
@@ -1017,7 +1021,7 @@ A monitoring task may contain multiple rules, allowing users to monitor differen
 
 ---
 
-## Design Notes
+### Design Notes
 
 - A monitoring task may contain multiple monitoring rules.
 - Rules are evaluated independently during each monitoring cycle.
@@ -1027,9 +1031,9 @@ A monitoring task may contain multiple rules, allowing users to monitor differen
 
 ---
 
-# 7.5 monitoring_snapshots
+## 7.5 monitoring_snapshots
 
-## Purpose
+### Purpose
 
 The `monitoring_snapshots` table stores the observed state of a monitored resource at the time of a monitoring execution.
 
@@ -1037,7 +1041,7 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 
 ---
 
-## Schema Definition
+### Schema Definition
 
 | Column | Type | PK | FK | Nullable | Default | Description |
 |---------|------|----|----|----------|---------|-------------|
@@ -1051,7 +1055,7 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 
 ---
 
-## Constraints
+### Constraints
 
 | Type | Name |
 |------|------|
@@ -1060,7 +1064,7 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 
 ---
 
-## References
+### References
 
 | Column | References |
 |---------|------------|
@@ -1068,7 +1072,7 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 
 ---
 
-## Referenced By
+### Referenced By
 
 | Column | References |
 |---------|------------|
@@ -1076,7 +1080,7 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 
 ---
 
-## Indexes
+### Indexes
 
 | Index | Columns | Purpose |
 |---------|----------|----------|
@@ -1086,7 +1090,7 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 
 ---
 
-## Design Notes
+### Design Notes
 
 - Snapshots represent operational monitoring data rather than permanent business history.
 - The `snapshot_data` column stores structured monitoring results using the PostgreSQL `JSONB` data type.
@@ -1094,9 +1098,9 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 - Snapshot records may be automatically removed according to the configured retention policy.
 - Permanent changes detected during comparison are recorded separately in the `history_events` table.
 
----# 7.5 monitoring_snapshots
+---
 
-## Purpose
+### Purpose
 
 The `monitoring_snapshots` table stores the observed state of a monitored resource at the time of a monitoring execution.
 
@@ -1104,7 +1108,7 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 
 ---
 
-## Schema Definition
+### Schema Definition
 
 | Column | Type | PK | FK | Nullable | Default | Description |
 |---------|------|----|----|----------|---------|-------------|
@@ -1118,7 +1122,7 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 
 ---
 
-## Constraints
+### Constraints
 
 | Type | Name |
 |------|------|
@@ -1127,7 +1131,7 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 
 ---
 
-## References
+### References
 
 | Column | References |
 |---------|------------|
@@ -1135,7 +1139,7 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 
 ---
 
-## Referenced By
+### Referenced By
 
 | Column | References |
 |---------|------------|
@@ -1143,7 +1147,7 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 
 ---
 
-## Indexes
+### Indexes
 
 | Index | Columns | Purpose |
 |---------|----------|----------|
@@ -1153,7 +1157,7 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 
 ---
 
-## Design Notes
+### Design Notes
 
 - Snapshots represent operational monitoring data rather than permanent business history.
 - The `snapshot_data` column stores structured monitoring results using the PostgreSQL `JSONB` data type.
@@ -1163,9 +1167,9 @@ Snapshots serve as operational data used by the Monitoring Engine to compare suc
 
 ---
 
-# 7.6 history_events
+## 7.6 history_events
 
-## Purpose
+### Purpose
 
 The `history_events` table stores permanent records of meaningful changes detected during monitoring.
 
@@ -1175,7 +1179,7 @@ A history event is created only when the Monitoring Engine determines that one o
 
 ---
 
-## Schema Definition
+### Schema Definition
 
 | Column | Type | PK | FK | Nullable | Default | Description |
 |---------|------|----|----|----------|---------|-------------|
@@ -1191,7 +1195,7 @@ A history event is created only when the Monitoring Engine determines that one o
 
 ---
 
-## Constraints
+### Constraints
 
 | Type | Name |
 |------|------|
@@ -1202,7 +1206,7 @@ A history event is created only when the Monitoring Engine determines that one o
 
 ---
 
-## References
+### References
 
 | Column | References |
 |---------|------------|
@@ -1212,7 +1216,7 @@ A history event is created only when the Monitoring Engine determines that one o
 
 ---
 
-## Referenced By
+### Referenced By
 
 | Table | Foreign Key |
 |---------|-------------|
@@ -1220,7 +1224,7 @@ A history event is created only when the Monitoring Engine determines that one o
 
 ---
 
-## Indexes
+### Indexes
 
 | Index | Columns | Purpose |
 |---------|----------|----------|
@@ -1230,7 +1234,7 @@ A history event is created only when the Monitoring Engine determines that one o
 
 ---
 
-## Design Notes
+### Design Notes
 
 - History events are permanent business records and are not subject to automatic cleanup.
 - Every history event is associated with exactly one monitoring task, one monitoring rule, and one monitoring snapshot.
@@ -1240,9 +1244,9 @@ A history event is created only when the Monitoring Engine determines that one o
 
 ---
 
-# 7.7 notification_preferences
+## 7.7 notification_preferences
 
-## Purpose
+### Purpose
 
 The `notification_preferences` table stores each user's notification configuration.
 
@@ -1252,7 +1256,7 @@ Each user has exactly one notification preference record.
 
 ---
 
-## Schema Definition
+### Schema Definition
 
 | Column | Type | PK | FK | Nullable | Default | Description |
 |---------|------|----|----|----------|---------|-------------|
@@ -1267,7 +1271,7 @@ Each user has exactly one notification preference record.
 
 ---
 
-## Constraints
+### Constraints
 
 | Type | Name |
 |------|------|
@@ -1277,7 +1281,7 @@ Each user has exactly one notification preference record.
 
 ---
 
-## References
+### References
 
 | Column | References |
 |---------|------------|
@@ -1285,7 +1289,7 @@ Each user has exactly one notification preference record.
 
 ---
 
-## Referenced By
+### Referenced By
 
 | Column | References |
 |---------|------------|
@@ -1293,7 +1297,7 @@ Each user has exactly one notification preference record.
 
 ---
 
-## Indexes
+### Indexes
 
 | Index | Columns | Purpose |
 |---------|----------|----------|
@@ -1301,7 +1305,7 @@ Each user has exactly one notification preference record.
 
 ---
 
-## Design Notes
+### Design Notes
 
 - Each user owns exactly one notification preference record.
 - Notification preferences determine delivery behavior but do not affect monitoring execution.
@@ -1310,9 +1314,9 @@ Each user has exactly one notification preference record.
 
 ---
 
-# 7.8 notifications
+## 7.8 notifications
 
-## Purpose
+### Purpose
 
 The `notifications` table stores notifications generated from history events.
 
@@ -1320,7 +1324,7 @@ Each notification represents a delivery attempt or delivered message through one
 
 ---
 
-## Schema Definition
+### Schema Definition
 
 | Column | Type | PK | FK | Nullable | Default | Description |
 |---------|------|----|----|----------|---------|-------------|
@@ -1334,7 +1338,7 @@ Each notification represents a delivery attempt or delivered message through one
 
 ---
 
-## Constraints
+### Constraints
 
 | Type | Name |
 |------|------|
@@ -1343,7 +1347,7 @@ Each notification represents a delivery attempt or delivered message through one
 
 ---
 
-## References
+### References
 
 | Column | References |
 |---------|------------|
@@ -1351,7 +1355,7 @@ Each notification represents a delivery attempt or delivered message through one
 
 ---
 
-## Referenced By
+### Referenced By
 
 | Column | References |
 |---------|------------|
@@ -1359,7 +1363,7 @@ Each notification represents a delivery attempt or delivered message through one
 
 ---
 
-## Indexes
+### Indexes
 
 | Index | Columns | Purpose |
 |---------|----------|----------|
@@ -1369,13 +1373,64 @@ Each notification represents a delivery attempt or delivered message through one
 
 ---
 
-## Design Notes
+### Design Notes
 
 - Notifications are created only after a History Event has been successfully recorded.
 - Multiple notifications may exist for a single History Event when multiple delivery channels are enabled.
 - Delivery status is tracked independently for each notification.
 - Failed notification attempts remain stored for auditing and retry purposes.
 - Notification records are independent of monitoring execution and do not affect monitoring results.
+
+---
+
+## 7.9 revoked_tokens
+
+### Purpose
+
+The `revoked_tokens` table stores identifiers of revoked JWT access tokens. It allows the authentication layer to reject a token after the user logs out, even if the token has not yet expired.
+
+Each record represents one revoked token. Revocation records are retained until the associated token expires, after which they may be removed by a cleanup process.
+
+---
+
+### Schema Definition
+
+| Column | Type | PK | FK | Nullable | Default | Description |
+|---------|------|:--:|:--:|:--------:|---------|-------------|
+| id | BIGSERIAL | ✓ | | ✗ | Auto Increment | Unique identifier for the revocation record. |
+| jti | VARCHAR(32) | | | ✗ | — | Unique JWT identifier used to identify the revoked token. |
+| expires_at | TIMESTAMP WITH TIME ZONE | | | ✗ | — | Expiration timestamp of the associated JWT. |
+| created_at | TIMESTAMP WITH TIME ZONE | | | ✗ | CURRENT_TIMESTAMP | Timestamp when the token was revoked. |
+
+---
+
+### Constraints
+
+**Primary Key**
+- `pk_revoked_tokens`
+
+**Unique Constraint**
+- `uq_revoked_tokens_jti` — Ensures that a token identifier is recorded only once.
+
+### Relationships
+
+This table has no foreign key relationship to `users`. Revocation is associated with an individual token identifier rather than a user account.
+
+### Indexes
+
+| Index | Columns | Purpose |
+|---------|---------|---------|
+| `uq_revoked_tokens_jti` | `jti` | Enforces uniqueness and supports token-revocation lookups. |
+| `idx_revoked_tokens_expires_at` | `expires_at` | Supports cleanup of expired revocation records. |
+
+### Design Notes
+
+- JWTs must contain a unique `jti` claim for revocation checks.
+- A token shall be rejected if its `jti` exists in this table.
+- Token expiration must still be validated independently of revocation status.
+- Revocation records may be deleted after their corresponding tokens expire.
+- Revocation checks must be performed as part of authentication for protected resources.
+- The table supports revoking the current session's access token without revoking tokens issued to other sessions.
 
 ---
 

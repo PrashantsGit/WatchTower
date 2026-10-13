@@ -32,6 +32,7 @@ class NotificationResponse(BaseModel):
     notification_channel: str
     notification_status: str
     delivered_at: datetime | None
+    read_at: datetime | None
     error_message: str | None
     created_at: datetime
     history_event: NotificationHistoryEventResponse

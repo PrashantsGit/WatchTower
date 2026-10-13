@@ -237,3 +237,117 @@ def test_dashboard_recent_events_use_24_hour_window():
 
     assert response.status_code == 200
     assert response.json()["recent_events"] == 1
+
+
+def test_notification_read_api_preserves_original_timestamp():
+    token, email = register_and_login("notification-read")
+    task_id = create_task(email, "Notification Read Task")
+    event_id = create_event(
+        task_id,
+        with_pending_notification=True,
+    )
+
+    db = SessionLocal()
+    try:
+        notification = (
+            db.query(Notification)
+            .filter(Notification.history_event_id == event_id)
+            .first()
+        )
+        assert notification is not None
+        notification_id = notification.id
+    finally:
+        db.close()
+
+    headers = {"Authorization": f"Bearer {token}"}
+    url = f"/api/notifications/{notification_id}/read"
+
+    first_response = client.patch(url, headers=headers)
+    assert first_response.status_code == 200
+
+    first_read_at = first_response.json()["read_at"]
+    assert first_read_at is not None
+
+    second_response = client.patch(url, headers=headers)
+    assert second_response.status_code == 200
+    assert second_response.json()["read_at"] == first_read_at
+
+
+def test_notification_delete_api_preserves_history_event():
+    token, email = register_and_login("notification-delete")
+    task_id = create_task(email, "Notification Delete Task")
+    event_id = create_event(
+        task_id,
+        with_pending_notification=True,
+    )
+
+    db = SessionLocal()
+    try:
+        notification = (
+            db.query(Notification)
+            .filter(Notification.history_event_id == event_id)
+            .first()
+        )
+        assert notification is not None
+        notification_id = notification.id
+    finally:
+        db.close()
+
+    response = client.delete(
+        f"/api/notifications/{notification_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 204
+
+    db = SessionLocal()
+    try:
+        assert db.get(Notification, notification_id) is None
+        assert db.get(HistoryEvent, event_id) is not None
+    finally:
+        db.close()
+
+
+def test_notification_delete_api_enforces_ownership():
+    owner_token, owner_email = register_and_login(
+        "notification-owner"
+    )
+    _other_token, other_email = register_and_login(
+        "notification-other"
+    )
+
+    other_task_id = create_task(
+        other_email,
+        "Other User Notification Task",
+    )
+    event_id = create_event(
+        other_task_id,
+        with_pending_notification=True,
+    )
+
+    db = SessionLocal()
+    try:
+        notification = (
+            db.query(Notification)
+            .filter(Notification.history_event_id == event_id)
+            .first()
+        )
+        assert notification is not None
+        notification_id = notification.id
+    finally:
+        db.close()
+
+    response = client.delete(
+        f"/api/notifications/{notification_id}",
+        headers={
+            "Authorization": f"Bearer {owner_token}",
+        },
+    )
+
+    assert response.status_code == 404
+
+    db = SessionLocal()
+    try:
+        assert db.get(Notification, notification_id) is not None
+        assert db.get(HistoryEvent, event_id) is not None
+    finally:
+        db.close()

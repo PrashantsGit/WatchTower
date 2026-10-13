@@ -163,3 +163,39 @@ def get_notification(
         notification_id=notification_id,
         user_id=current_user.id,
     )
+
+
+@router.patch(
+    "/{notification_id}/read",
+    response_model=NotificationResponse,
+)
+def mark_notification_as_read(
+    notification_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    service = NotificationService(db)
+
+    return service.mark_as_read(
+        notification_id=notification_id,
+        user_id=current_user.id,
+    )
+
+
+@router.delete(
+    "/{notification_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_notification(
+    notification_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    service = NotificationService(db)
+
+    service.delete_notification(
+        notification_id=notification_id,
+        user_id=current_user.id,
+    )
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

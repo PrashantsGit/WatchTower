@@ -152,3 +152,10 @@ class NotificationRepository:
         self.db.flush()
         self.db.refresh(notification)
         return notification
+ 
+    def delete(
+        self,
+        notification: Notification,
+    ) -> None:
+        self.db.delete(notification)
+        self.db.flush()

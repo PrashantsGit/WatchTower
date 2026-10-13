@@ -483,3 +483,107 @@ def test_list_notifications_supports_limit_and_offset():
         ).delete(synchronize_session=False)
         db.commit()
         db.close()
+
+
+def test_mark_notification_as_read_is_idempotent():
+    db = SessionLocal()
+
+    try:
+        user, _, _, _, history_event = create_test_data(db)
+        service = NotificationService(db)
+
+        notification = service.create_notification(
+            history_event_id=history_event.id,
+            notification_channel="EMAIL",
+        )
+
+        first = service.mark_as_read(
+            notification_id=notification.id,
+            user_id=user.id,
+        )
+        original_read_at = first.read_at
+
+        assert original_read_at is not None
+
+        second = service.mark_as_read(
+            notification_id=notification.id,
+            user_id=user.id,
+        )
+
+        assert second.read_at == original_read_at
+
+    finally:
+        db.query(User).filter(
+            User.email == "notification-service@example.com"
+        ).delete(synchronize_session=False)
+        db.commit()
+        db.close()
+
+
+def test_mark_notification_as_read_requires_ownership():
+    db = SessionLocal()
+
+    try:
+        user, _, _, _, history_event = create_test_data(db)
+        service = NotificationService(db)
+
+        notification = service.create_notification(
+            history_event_id=history_event.id,
+            notification_channel="EMAIL",
+        )
+
+        with pytest.raises(ResourceNotFoundError):
+            service.mark_as_read(
+                notification_id=notification.id,
+                user_id=999999999,
+            )
+
+        with pytest.raises(ResourceNotFoundError):
+            service.mark_as_read(
+                notification_id=999999999,
+                user_id=user.id,
+            )
+
+    finally:
+        db.query(User).filter(
+            User.email == "notification-service@example.com"
+        ).delete(synchronize_session=False)
+        db.commit()
+        db.close()
+
+
+def test_delete_notification_preserves_history_event():
+    db = SessionLocal()
+
+    try:
+        user, _, _, _, history_event = create_test_data(db)
+        service = NotificationService(db)
+
+        notification = service.create_notification(
+            history_event_id=history_event.id,
+            notification_channel="EMAIL",
+        )
+
+        notification_id = notification.id
+        history_event_id = history_event.id
+
+        service.delete_notification(
+            notification_id=notification_id,
+            user_id=user.id,
+        )
+
+        assert db.get(Notification, notification_id) is None
+        assert db.get(HistoryEvent, history_event_id) is not None
+
+        with pytest.raises(ResourceNotFoundError):
+            service.delete_notification(
+                notification_id=notification_id,
+                user_id=user.id,
+            )
+
+    finally:
+        db.query(User).filter(
+            User.email == "notification-service@example.com"
+        ).delete(synchronize_session=False)
+        db.commit()
+        db.close()

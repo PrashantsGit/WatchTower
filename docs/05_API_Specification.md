@@ -892,6 +892,82 @@ The endpoint updates the authenticated user's notification preferences.
 
 ---
 
+## 7.4 Mark Notification as Read
+
+### Endpoint
+
+```http
+PATCH /api/notifications/{notification_id}/read
+```
+
+### Authentication
+
+Required.
+
+### Request
+
+No request body is required.
+
+### Success Response — `200 OK`
+
+```json
+{
+    "id": 10,
+    "read_at": "2026-10-12T10:30:00Z"
+}
+```
+
+### Status Codes
+
+| Status | Meaning |
+|--------|---------|
+| `200 OK` | Notification marked as read, or was already read. |
+| `401 Unauthorized` | Authentication required. |
+| `404 Not Found` | Notification does not exist or is not accessible to the authenticated user. |
+
+### Behavior
+
+- Only the notification's owner may mark it as read.
+- The first successful request sets `read_at` to the current timestamp.
+- Repeated requests must not change the original `read_at` timestamp.
+
+---
+
+## 7.5 Delete Notification
+
+### Endpoint
+
+```http
+DELETE /api/notifications/{notification_id}
+```
+
+### Authentication
+
+Required.
+
+### Success Response — `200 OK`
+
+```json
+{
+    "message": "Notification deleted successfully."
+}
+```
+
+### Status Codes
+
+| Status | Meaning |
+|--------|---------|
+| `200 OK` | Notification deleted successfully. |
+| `401 Unauthorized` | Authentication required. |
+| `404 Not Found` | Notification does not exist or is not accessible to the authenticated user. |
+
+### Behavior
+
+- Only the notification's owner may delete it.
+- Deleting a notification must not delete its associated history event.
+
+---
+
 # 8. User API
 
 ---

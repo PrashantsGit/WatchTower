@@ -118,3 +118,42 @@ class NotificationService:
         except Exception:
             self.db.rollback()
             raise
+    
+    def mark_as_read(
+        self,
+        notification_id: int,
+        user_id: int,
+    ) -> Notification:
+        notification = self.get_notification(
+            notification_id=notification_id,
+            user_id=user_id,
+        )
+
+        try:
+            if notification.read_at is None:
+                notification.read_at = datetime.now(timezone.utc)
+
+            notification = self.repository.update(notification)
+            self.db.commit()
+            self.db.refresh(notification)
+            return notification
+        except Exception:
+            self.db.rollback()
+            raise
+
+    def delete_notification(
+        self,
+        notification_id: int,
+        user_id: int,
+    ) -> None:
+        notification = self.get_notification(
+            notification_id=notification_id,
+            user_id=user_id,
+        )
+
+        try:
+            self.repository.delete(notification)
+            self.db.commit()
+        except Exception:
+            self.db.rollback()
+            raise

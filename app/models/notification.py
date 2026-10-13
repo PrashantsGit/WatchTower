@@ -51,6 +51,11 @@ class Notification(Base):
         nullable=True,
     )
 
+    read_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
     error_message: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,

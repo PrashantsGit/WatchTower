@@ -1316,6 +1316,7 @@ Each user has exactly one notification preference record.
 - Notification preferences determine delivery behavior but do not affect monitoring execution.
 - Additional notification channels can be introduced without modifying existing records.
 - Default values ensure users receive notifications immediately after account creation.
+- User read state is tracked independently from notification delivery status through the nullable `read_at` timestamp.
 
 ---
 
@@ -1338,6 +1339,7 @@ Each notification represents a delivery attempt or delivered message through one
 | notification_channel | VARCHAR(30) | No | No | No | — | Delivery channel (Email, Browser Push, etc.). |
 | notification_status | VARCHAR(30) | No | No | No | 'PENDING' | Current delivery status. |
 | delivered_at | TIMESTAMP WITH TIME ZONE | No | No | Yes | NULL | Timestamp when the notification was successfully delivered. |
+| read_at | TIMESTAMP WITH TIME ZONE | No | No | Yes | NULL | Timestamp when the user marked the notification as read. |
 | error_message | TEXT | No | No | Yes | NULL | Error details if delivery fails. |
 | created_at | TIMESTAMP WITH TIME ZONE | No | No | No | CURRENT_TIMESTAMP | Record creation timestamp. |
 

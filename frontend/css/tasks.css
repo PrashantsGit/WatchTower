@@ -1,0 +1,107 @@
+
+/* ============================================================
+   WATCHTOWER — ALL TASKS PAGE
+   ============================================================ */
+
+.tasks-page-intro {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.tasks-page-intro h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.tasks-page-intro p {
+    color: var(--wt-text-muted);
+    font-size: 14px;
+}
+
+.tasks-page-panel {
+    overflow: hidden;
+}
+
+.task-count {
+    flex-shrink: 0;
+    color: var(--wt-text-muted);
+    font-size: 12px;
+}
+
+.tasks-toolbar {
+    display: flex;
+    gap: 12px;
+    padding: 18px 20px 4px;
+}
+
+.tasks-toolbar input,
+.tasks-toolbar select {
+    min-height: 40px;
+    padding: 0 12px;
+    background: var(--wt-surface);
+    border: 1px solid var(--wt-border);
+    border-radius: 7px;
+    color: var(--wt-text);
+    font: inherit;
+    font-size: 13px;
+}
+
+.tasks-toolbar input {
+    flex: 1;
+    min-width: 0;
+}
+
+.tasks-toolbar input:focus,
+.tasks-toolbar select:focus {
+    outline: 2px solid rgba(245, 183, 44, 0.25);
+    border-color: var(--wt-gold-dark);
+}
+
+.tasks-toolbar input::placeholder {
+    color: var(--wt-text-muted);
+}
+
+.task-card-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.task-card-main .task-url {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.task-card-main .task-url:hover {
+    color: var(--wt-gold);
+}
+
+@media (max-width: 600px) {
+    .tasks-page-intro {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .tasks-toolbar {
+        flex-direction: column;
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+
+    .tasks-toolbar select {
+        width: 100%;
+    }
+
+    .task-count {
+        display: none;
+    }
+}

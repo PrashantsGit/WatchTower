@@ -135,7 +135,7 @@ class WebPushProvider:
             webpush(
                 subscription_info=subscription_info,
                 data=json.dumps(payload),
-                vapid_private_key=config.vapid_private_key,
+                vapid_private_key=config.vapid_private_key.replace("\\n", "\n"),
                 vapid_claims={"sub": config.vapid_subject},
                 ttl=config.webpush_ttl_seconds,
             )

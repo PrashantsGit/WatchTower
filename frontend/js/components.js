@@ -161,10 +161,9 @@ function setPageHeader() {
 
         tasks: {
 
-            title: "Tasks",
+            title: document.body.dataset.pageTitle || "Tasks",
 
             context: "Manage your monitors"
-
         },
 
         history: {
@@ -238,13 +237,114 @@ async function initializeComponents() {
 
     ]);
 
+    setupSidebarControls();
 
     setActiveNavigation();
 
     setPageHeader();
 
 }
+/* ============================================================
+   SIDEBAR CONTROLS
+   ============================================================ */
 
+function setupSidebarControls() {
+
+    const sidebar = document.querySelector(".sidebar");
+    const toggleButton = document.getElementById("sidebar-toggle");
+    const mobileButton = document.getElementById("mobile-menu-button");
+
+    if (!sidebar) {
+        return;
+    }
+
+    const collapsedKey = "watchtower-sidebar-collapsed";
+
+    function setCollapsed(collapsed) {
+        document.body.classList.toggle(
+            "sidebar-collapsed",
+            collapsed
+        );
+
+        if (toggleButton) {
+            toggleButton.setAttribute(
+                "aria-expanded",
+                String(!collapsed)
+            );
+
+            toggleButton.setAttribute(
+                "aria-label",
+                collapsed ? "Expand sidebar" : "Collapse sidebar"
+            );
+
+            toggleButton.title =
+                collapsed ? "Expand sidebar" : "Collapse sidebar";
+
+            toggleButton.innerHTML =
+                `<span aria-hidden="true">${collapsed ? "›" : "‹"}</span>`;
+        }
+
+        try {
+            localStorage.setItem(
+                collapsedKey,
+                String(collapsed)
+            );
+        } catch (error) {
+            // The sidebar still works if storage is unavailable.
+        }
+    }
+
+    let initiallyCollapsed = false;
+
+    try {
+        initiallyCollapsed =
+            localStorage.getItem(collapsedKey) === "true";
+    } catch (error) {
+        // Use the expanded layout by default.
+    }
+
+    setCollapsed(initiallyCollapsed);
+
+    if (toggleButton) {
+        toggleButton.addEventListener("click", () => {
+            const collapsed =
+                !document.body.classList.contains("sidebar-collapsed");
+
+            setCollapsed(collapsed);
+        });
+    }
+
+    if (mobileButton) {
+        mobileButton.addEventListener("click", () => {
+            const isOpen =
+                document.body.classList.toggle("mobile-nav-open");
+
+            mobileButton.setAttribute(
+                "aria-expanded",
+                String(isOpen)
+            );
+
+            mobileButton.setAttribute(
+                "aria-label",
+                isOpen ? "Close navigation" : "Open navigation"
+            );
+
+            mobileButton.title =
+                isOpen ? "Close navigation" : "Open navigation";
+        });
+    }
+
+    sidebar.querySelectorAll(".navigation-item").forEach(item => {
+        item.addEventListener("click", () => {
+            document.body.classList.remove("mobile-nav-open");
+
+            if (mobileButton) {
+                mobileButton.setAttribute("aria-expanded", "false");
+                mobileButton.setAttribute("aria-label", "Open navigation");
+            }
+        });
+    });
+}
 
 /* ============================================================
    COMPONENTS READY

@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks — WatchTower</title>
+
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../css/app-shell.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/tasks.css">
+</head>
+
+<body data-page="tasks">
+    <div class="app-shell">
+        <div id="app-sidebar"></div>
+
+        <div class="app-main">
+            <div id="app-header"></div>
+
+            <main class="page-content">
+                <div class="content-container">
+
+                    <section class="tasks-page-intro">
+                        <div>
+                            <h1>Tasks</h1>
+                            <p>Manage all your monitoring configurations.</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            id="add-task-button"
+                            class="panel-action"
+                        >
+                            + Add Monitor
+                        </button>
+                    </section>
+
+                    <section class="dashboard-panel tasks-page-panel">
+                        <div class="panel-header">
+                            <div>
+                                <h2 class="panel-title">All Monitors</h2>
+                                <p class="panel-description">
+                                    Browse your tasks and open a monitor to manage its rules.
+                                </p>
+                            </div>
+
+                            <span id="task-count" class="task-count">
+                                Loading...
+                            </span>
+                        </div>
+
+                        <div class="tasks-toolbar">
+                            <input
+                                type="search"
+                                id="task-search"
+                                placeholder="Search monitors..."
+                                aria-label="Search monitoring tasks"
+                            >
+
+                            <select id="task-filter" aria-label="Filter tasks by status">
+                                <option value="all">All statuses</option>
+                                <option value="active">Active</option>
+                                <option value="paused">Paused</option>
+                            </select>
+                        </div>
+
+                        <div id="tasks-container" class="tasks-container">
+                            <div class="loading-message">
+                                Loading monitoring tasks...
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+            </main>
+
+            <div id="app-footer"></div>
+        </div>
+    </div>
+
+    <script src="../js/components.js"></script>
+    <script src="../js/tasks.js"></script>
+</body>
+</html>

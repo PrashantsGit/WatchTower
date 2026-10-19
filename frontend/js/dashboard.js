@@ -50,7 +50,10 @@ async function initializeDashboard() {
 
     setupDashboardActions();
 
-    await loadDashboard();
+    await Promise.all([
+        loadDashboard(),
+        loadRecentActivity()
+    ]);
 
 }
 
@@ -369,6 +372,147 @@ function renderTasks(tasks) {
 
 }
 
+/* ============================================================
+   RECENT ACTIVITY
+   ============================================================ */
+
+async function loadRecentActivity() {
+
+    const container = document.getElementById(
+        "recent-activity-container"
+    );
+
+    if (!container) {
+        console.error(
+            "WatchTower: recent-activity-container not found."
+        );
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/history?limit=5`,
+            {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response.status === 401) {
+            localStorage.removeItem(ACCESS_TOKEN_KEY);
+            window.location.href = "login.html";
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error("Failed to load recent activity.");
+        }
+
+        const events = await response.json();
+
+        renderRecentActivity(events, container);
+
+    } catch (error) {
+        console.error(
+            "WatchTower recent activity error:",
+            error
+        );
+
+        container.innerHTML = `
+            <div class="activity-empty">
+                <div class="activity-empty-title">
+                    Unable to load recent activity
+                </div>
+                <div class="activity-empty-description">
+                    Please refresh the page and try again.
+                </div>
+            </div>
+        `;
+    }
+}
+
+
+/* ============================================================
+   RENDER RECENT ACTIVITY
+   ============================================================ */
+
+function renderRecentActivity(events, container) {
+
+    if (!Array.isArray(events) || events.length === 0) {
+        container.innerHTML = `
+            <div class="activity-empty">
+                <div
+                    class="activity-placeholder-icon"
+                    aria-hidden="true"
+                >◌</div>
+
+                <div>
+                    <div class="activity-empty-title">
+                        No recent activity
+                    </div>
+
+                    <div class="activity-empty-description">
+                        Monitoring events will appear here.
+                    </div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = events.map(event => {
+
+        const eventType = String(
+            event.event_type || "MONITORING_EVENT"
+        );
+
+        const eventTitle = eventType
+            .replace(/_/g, " ")
+            .toLowerCase()
+            .replace(/\b\w/g, character => character.toUpperCase());
+
+        const message = event.event_message
+            ? escapeHtml(event.event_message)
+            : (
+                event.previous_value != null ||
+                event.current_value != null
+            )
+                ? `${escapeHtml(event.previous_value ?? "—")} → ${escapeHtml(event.current_value ?? "—")}`
+                : "A monitoring event was detected.";
+
+        const detectedAt = event.detected_at
+            ? new Date(event.detected_at)
+            : null;
+
+        const formattedDate =
+            detectedAt && !Number.isNaN(detectedAt.getTime())
+                ? detectedAt.toLocaleString()
+                : "Time unavailable";
+
+        return `
+            <article class="activity-item">
+                <div class="activity-item-content">
+                    <div class="activity-item-title">
+                        ${escapeHtml(eventTitle)}
+                    </div>
+
+                    <div class="activity-item-description">
+                        ${message}
+                    </div>
+
+                    <div class="activity-item-meta">
+                        Task #${escapeHtml(String(event.task_id))}
+                        <span aria-hidden="true">·</span>
+                        ${escapeHtml(formattedDate)}
+                    </div>
+                </div>
+            </article>
+        `;
+
+    }).join("");
+}
 
 /* ============================================================
    LAST CHECKED

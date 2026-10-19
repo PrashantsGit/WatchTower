@@ -232,7 +232,7 @@ if (loginForm) {
                    Continue to application
                    ------------------------------------------- */
 
-                window.location.href = "pages/dashboard.html";
+                window.location.href = "dashboard.html";
 
 
             } catch (error) {

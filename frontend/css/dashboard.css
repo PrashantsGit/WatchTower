@@ -523,7 +523,20 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+.task-card-header > div:first-child {
+    flex: 1;
+    min-width: 0;
+}
 
+.task-url {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 
 /* ============================================================
    STATUS
@@ -700,4 +713,46 @@
         overflow-wrap: anywhere;
     }
 
+}
+
+/* ============================================================
+   RECENT ACTIVITY
+   ============================================================ */
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.activity-item {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color, #252c39);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-item-title {
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--text-primary, #f1f5f9);
+}
+
+.activity-item-description {
+    color: var(--text-secondary, #94a3b8);
+    overflow-wrap: anywhere;
+}
+
+.activity-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-muted, #7890ad);
+}
+
+.activity-list .activity-empty {
+    padding: 24px;
 }
